@@ -1,3 +1,5 @@
+const STORAGE_KEY = 'boxBuilderState.v1';
+
 const state = {
   dimensionMode: 'external',
   width: 30,
@@ -7,7 +9,12 @@ const state = {
   driverSize: 12,
   driverCutout: 11.1,
   mountingDepth: 6.5,
-  driverDisplacement: 0.08
+  driverDisplacement: 0.08,
+  targetNetVolume: 1.25,
+  useMaxConstraints: true,
+  maxBoxWidth: 38,
+  maxBoxHeight: 16,
+  maxBoxDepth: 22
 };
 
 const DRIVER_DEFAULTS = {
@@ -26,7 +33,12 @@ const inputs = {
   driverSize: document.getElementById('driverSize'),
   driverCutout: document.getElementById('driverCutout'),
   mountingDepth: document.getElementById('mountingDepth'),
-  driverDisplacement: document.getElementById('driverDisplacement')
+  driverDisplacement: document.getElementById('driverDisplacement'),
+  targetNetVolume: document.getElementById('targetNetVolume'),
+  useMaxConstraints: document.getElementById('useMaxConstraints'),
+  maxBoxWidth: document.getElementById('maxBoxWidth'),
+  maxBoxHeight: document.getElementById('maxBoxHeight'),
+  maxBoxDepth: document.getElementById('maxBoxDepth')
 };
 
 const outputs = {
@@ -36,7 +48,12 @@ const outputs = {
   netBefore: document.getElementById('netBefore'),
   netAfter: document.getElementById('netAfter'),
   warnings: document.getElementById('warnings'),
-  diagram: document.getElementById('boxDiagram')
+  diagram: document.getElementById('boxDiagram'),
+  suggestedInternalDimensions: document.getElementById('suggestedInternalDimensions'),
+  constraintFitStatus: document.getElementById('constraintFitStatus'),
+  maxConstrainedNet: document.getElementById('maxConstrainedNet'),
+  cutSheet: document.getElementById('cutSheet'),
+  applySuggestedBtn: document.getElementById('applySuggestedBtn')
 };
 
 function safeNumber(value) {
@@ -129,7 +146,137 @@ function validateBox(currentState, internalDimensions) {
     warnings.push('Please enter valid positive dimensions and non-negative wood thickness.');
   }
 
+  if (currentState.useMaxConstraints) {
+    const externalDimensions = getExternalDimensions(currentState);
+    if (
+      externalDimensions.width > currentState.maxBoxWidth ||
+      externalDimensions.height > currentState.maxBoxHeight ||
+      externalDimensions.depth > currentState.maxBoxDepth
+    ) {
+      warnings.push('Current box exceeds configured trunk maximum dimensions.');
+    }
+  }
+
   return warnings;
+}
+
+function getSuggestedInternalDimensions(currentState, internalDimensions) {
+  const currentGross = getVolume(internalDimensions).ft3;
+  const targetGross = currentState.targetNetVolume + currentState.driverDisplacement;
+
+  if (
+    currentGross <= 0 ||
+    targetGross <= 0 ||
+    internalDimensions.width <= 0 ||
+    internalDimensions.height <= 0 ||
+    internalDimensions.depth <= 0
+  ) {
+    return null;
+  }
+
+  const scale = Math.cbrt(targetGross / currentGross);
+  return {
+    width: internalDimensions.width * scale,
+    height: internalDimensions.height * scale,
+    depth: internalDimensions.depth * scale
+  };
+}
+
+function getConstraintData(currentState, externalDimensions) {
+  if (!currentState.useMaxConstraints) {
+    return {
+      enabled: false,
+      fitsCurrent: true,
+      maxInternal: null,
+      maxNet: null,
+      overBy: null
+    };
+  }
+
+  const overBy = {
+    width: Math.max(0, externalDimensions.width - currentState.maxBoxWidth),
+    height: Math.max(0, externalDimensions.height - currentState.maxBoxHeight),
+    depth: Math.max(0, externalDimensions.depth - currentState.maxBoxDepth)
+  };
+
+  const fitsCurrent = overBy.width <= 0 && overBy.height <= 0 && overBy.depth <= 0;
+  const t2 = currentState.woodThickness * 2;
+  const maxInternal = {
+    width: currentState.maxBoxWidth - t2,
+    height: currentState.maxBoxHeight - t2,
+    depth: currentState.maxBoxDepth - t2
+  };
+
+  const hasPositiveInternal = maxInternal.width > 0 && maxInternal.height > 0 && maxInternal.depth > 0;
+  if (!hasPositiveInternal) {
+    return {
+      enabled: true,
+      fitsCurrent,
+      maxInternal,
+      maxNet: null,
+      overBy
+    };
+  }
+
+  const maxGross = getVolume(maxInternal).ft3;
+  return {
+    enabled: true,
+    fitsCurrent,
+    maxInternal,
+    maxNet: maxGross - currentState.driverDisplacement,
+    overBy
+  };
+}
+
+function applyConstraintToSuggested(currentState, suggestedInternal, constraintData) {
+  if (!suggestedInternal || !constraintData.enabled || !constraintData.maxInternal) {
+    return {
+      internal: suggestedInternal,
+      constrained: false,
+      reachable: !!suggestedInternal
+    };
+  }
+
+  const maxInternal = constraintData.maxInternal;
+  const scale = Math.min(
+    maxInternal.width / suggestedInternal.width,
+    maxInternal.height / suggestedInternal.height,
+    maxInternal.depth / suggestedInternal.depth,
+    1
+  );
+
+  if (!Number.isFinite(scale) || scale <= 0) {
+    return {
+      internal: null,
+      constrained: true,
+      reachable: false
+    };
+  }
+
+  const constrained = scale < 0.999;
+  return {
+    internal: {
+      width: suggestedInternal.width * scale,
+      height: suggestedInternal.height * scale,
+      depth: suggestedInternal.depth * scale
+    },
+    constrained,
+    reachable: !constrained
+  };
+}
+
+function getCutSheet(externalDimensions, woodThickness) {
+  const panelHeight = externalDimensions.height - woodThickness * 2;
+  const panelDepth = externalDimensions.depth - woodThickness * 2;
+
+  return [
+    { part: 'Top', qty: 1, width: externalDimensions.width, height: externalDimensions.depth },
+    { part: 'Bottom', qty: 1, width: externalDimensions.width, height: externalDimensions.depth },
+    { part: 'Front', qty: 1, width: externalDimensions.width, height: panelHeight },
+    { part: 'Back', qty: 1, width: externalDimensions.width, height: panelHeight },
+    { part: 'Left Side', qty: 1, width: panelDepth, height: panelHeight },
+    { part: 'Right Side', qty: 1, width: panelDepth, height: panelHeight }
+  ];
 }
 
 function renderWarnings(warnings) {
@@ -152,25 +299,30 @@ function renderWarnings(warnings) {
 
 function renderSVG(externalDimensions, internalDimensions) {
   const svg = outputs.diagram;
-  const frontX = 62;
-  const frontY = 58;
-  const maxW = 180;
-  const maxH = 130;
-  const offset = 44;
+  const viewWidth = 420;
+  const viewHeight = 260;
+  const padding = 22;
+  const offset = 56;
 
   const safeW = Math.max(externalDimensions.width, 0.01);
   const safeH = Math.max(externalDimensions.height, 0.01);
-  const safeD = Math.max(externalDimensions.depth, 0.01);
-  const scale = Math.min(maxW / safeW, maxH / safeH, 1);
+  const safeDepth = Math.max(externalDimensions.depth, 0.01);
+  const availableW = viewWidth - padding * 2 - offset - 18;
+  const availableH = viewHeight - padding * 2 - 30;
+  const scale = Math.min(availableW / safeW, availableH / safeH);
 
   const w = safeW * scale;
   const h = safeH * scale;
 
-  const fx = frontX;
-  const fy = frontY;
+  const fx = padding + (availableW - w) * 0.5;
+  let fy = padding + (availableH - h) * 0.34;
 
   const backX = fx + offset;
-  const backY = fy - offset * 0.48;
+  let backY = fy - offset * 0.42;
+  if (backY < 10) {
+    fy += 10 - backY;
+    backY = 10;
+  }
 
   const lines = [
     `<rect x="${fx}" y="${fy}" width="${w}" height="${h}" rx="4" fill="rgba(24,52,112,0.42)" stroke="#58d4ff" stroke-width="2" />`,
@@ -181,15 +333,71 @@ function renderSVG(externalDimensions, internalDimensions) {
     `<line x1="${fx + w}" y1="${fy + h}" x2="${backX + w}" y2="${backY + h}" stroke="#77c9ff" stroke-width="1.2" />`
   ];
 
-  const labelX = fx + w + 16;
-  const labelY = fy + h / 2;
+  const rightLimit = viewWidth - padding;
+  const leftLimit = padding;
+  const estimateLabelWidth = (text) => text.length * 7;
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-  lines.push(`<text x="${fx + w / 2}" y="${fy + h + 23}" text-anchor="middle" fill="#bcd6ff" font-size="12">W: ${formatInches(externalDimensions.width)}</text>`);
-  lines.push(`<text x="${labelX}" y="${labelY}" fill="#bcd6ff" font-size="12">H: ${formatInches(externalDimensions.height)}</text>`);
-  lines.push(`<text x="${backX + w + 10}" y="${backY - 8}" fill="#7ae3ff" font-size="12">D: ${formatInches(externalDimensions.depth)}</text>`);
+  const widthText = `W: ${formatInches(externalDimensions.width)}`;
+  const heightText = `H: ${formatInches(externalDimensions.height)}`;
+  const depthText = `D: ${formatInches(safeDepth)}`;
+
+  const widthLabelY = clamp(fy + h + 24, padding + 16, viewHeight - 28);
+  const heightLabelY = clamp(fy + h / 2, padding + 16, viewHeight - 34);
+  const heightLabelX = clamp(
+    fx + w + 16,
+    leftLimit,
+    rightLimit - estimateLabelWidth(heightText)
+  );
+  const depthLabelX = clamp(
+    backX + w + 8,
+    leftLimit,
+    rightLimit - estimateLabelWidth(depthText)
+  );
+  const depthLabelY = clamp(backY - 8, padding + 14, viewHeight - 40);
+
+  lines.push(`<text x="${fx + w / 2}" y="${widthLabelY}" text-anchor="middle" fill="#bcd6ff" font-size="12">${widthText}</text>`);
+  lines.push(`<text x="${heightLabelX}" y="${heightLabelY}" fill="#bcd6ff" font-size="12">${heightText}</text>`);
+  lines.push(`<text x="${depthLabelX}" y="${depthLabelY}" fill="#7ae3ff" font-size="12">${depthText}</text>`);
   lines.push(`<text x="24" y="236" fill="#8fb2f8" font-size="11">Internal: ${formatDimensions(internalDimensions)}</text>`);
 
   svg.innerHTML = lines.join('');
+}
+
+function renderCutSheet(externalDimensions, woodThickness) {
+  const rows = getCutSheet(externalDimensions, woodThickness);
+
+  const invalidPanels = rows.some((row) => row.width <= 0 || row.height <= 0);
+  if (invalidPanels) {
+    outputs.cutSheet.innerHTML = '<p class="cut-sheet-message">Cut sheet unavailable: panel sizes became non-positive. Check dimensions and wood thickness.</p>';
+    return;
+  }
+
+  const body = rows
+    .map((row) => `<tr><td>${row.part}</td><td>${row.qty}</td><td>${row.width.toFixed(2)} in</td><td>${row.height.toFixed(2)} in</td></tr>`)
+    .join('');
+
+  outputs.cutSheet.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Panel</th>
+          <th>Qty</th>
+          <th>Width</th>
+          <th>Height</th>
+        </tr>
+      </thead>
+      <tbody>${body}</tbody>
+    </table>
+  `;
+}
+
+function renderPresetState() {
+  const buttons = document.querySelectorAll('.preset-btn');
+  buttons.forEach((button) => {
+    const presetValue = safeNumber(button.dataset.preset);
+    button.classList.toggle('active', Math.abs(presetValue - state.targetNetVolume) < 0.005);
+  });
 }
 
 function renderUI() {
@@ -200,14 +408,55 @@ function renderUI() {
   const netAfter = getNetVolume(internalVolume.ft3, state.driverDisplacement);
   const warnings = validateBox(state, internalDimensions);
 
+  const unconstrainedSuggested = getSuggestedInternalDimensions(state, internalDimensions);
+  const constraintData = getConstraintData(state, externalDimensions);
+  const suggestedResult = applyConstraintToSuggested(state, unconstrainedSuggested, constraintData);
+  const suggestedInternal = suggestedResult.internal;
+
   outputs.internalDimensions.textContent = formatDimensions(internalDimensions);
   outputs.externalDimensions.textContent = formatDimensions(externalDimensions);
   outputs.grossVolume.textContent = `${internalVolume.in3.toFixed(2)} in³ | ${internalVolume.ft3.toFixed(3)} ft³`;
   outputs.netBefore.textContent = `${internalVolume.ft3.toFixed(3)} ft³`;
   outputs.netAfter.textContent = `${netAfter.toFixed(3)} ft³`;
 
+  if (suggestedInternal) {
+    outputs.suggestedInternalDimensions.textContent = formatDimensions(suggestedInternal);
+    outputs.applySuggestedBtn.disabled = false;
+  } else {
+    outputs.suggestedInternalDimensions.textContent = '-';
+    outputs.applySuggestedBtn.disabled = true;
+  }
+
+  if (!constraintData.enabled) {
+    outputs.constraintFitStatus.textContent = 'Constraints disabled';
+    outputs.maxConstrainedNet.textContent = '-';
+  } else if (!constraintData.maxInternal || constraintData.maxNet === null) {
+    outputs.constraintFitStatus.textContent = 'Invalid max dimensions';
+    outputs.maxConstrainedNet.textContent = 'N/A';
+  } else if (constraintData.fitsCurrent) {
+    outputs.constraintFitStatus.textContent = suggestedResult.constrained
+      ? 'Current fits, target exceeds trunk max'
+      : 'Current fits within trunk limits';
+    outputs.maxConstrainedNet.textContent = `${constraintData.maxNet.toFixed(3)} ft³`;
+  } else {
+    const parts = [];
+    if (constraintData.overBy.width > 0) {
+      parts.push(`W +${constraintData.overBy.width.toFixed(2)} in`);
+    }
+    if (constraintData.overBy.height > 0) {
+      parts.push(`H +${constraintData.overBy.height.toFixed(2)} in`);
+    }
+    if (constraintData.overBy.depth > 0) {
+      parts.push(`D +${constraintData.overBy.depth.toFixed(2)} in`);
+    }
+    outputs.constraintFitStatus.textContent = `Over max: ${parts.join(', ')}`;
+    outputs.maxConstrainedNet.textContent = `${constraintData.maxNet.toFixed(3)} ft³`;
+  }
+
   renderWarnings(warnings);
   renderSVG(externalDimensions, internalDimensions);
+  renderCutSheet(externalDimensions, state.woodThickness);
+  renderPresetState();
 }
 
 function syncStateFromInputs(changedKey) {
@@ -219,6 +468,11 @@ function syncStateFromInputs(changedKey) {
   state.driverCutout = safeNumber(inputs.driverCutout.value);
   state.mountingDepth = safeNumber(inputs.mountingDepth.value);
   state.driverDisplacement = safeNumber(inputs.driverDisplacement.value);
+  state.targetNetVolume = safeNumber(inputs.targetNetVolume.value);
+  state.useMaxConstraints = inputs.useMaxConstraints.checked;
+  state.maxBoxWidth = safeNumber(inputs.maxBoxWidth.value);
+  state.maxBoxHeight = safeNumber(inputs.maxBoxHeight.value);
+  state.maxBoxDepth = safeNumber(inputs.maxBoxDepth.value);
 
   const modeInput = document.querySelector('input[name="dimensionMode"]:checked');
   if (modeInput) {
@@ -236,6 +490,91 @@ function syncStateFromInputs(changedKey) {
       inputs.mountingDepth.value = defaults.depth;
       inputs.driverDisplacement.value = defaults.displacement;
     }
+  }
+
+  persistState();
+}
+
+function applySuggestedDimensions() {
+  const internalDimensions = getInternalDimensions(state);
+  const unconstrainedSuggested = getSuggestedInternalDimensions(state, internalDimensions);
+  const constraintData = getConstraintData(state, getExternalDimensions(state));
+  const suggestedInternal = applyConstraintToSuggested(state, unconstrainedSuggested, constraintData).internal;
+  if (!suggestedInternal) {
+    return;
+  }
+
+  if (state.dimensionMode === 'internal') {
+    state.width = suggestedInternal.width;
+    state.height = suggestedInternal.height;
+    state.depth = suggestedInternal.depth;
+  } else {
+    const t = state.woodThickness * 2;
+    state.width = suggestedInternal.width + t;
+    state.height = suggestedInternal.height + t;
+    state.depth = suggestedInternal.depth + t;
+  }
+
+  inputs.width.value = state.width.toFixed(2);
+  inputs.height.value = state.height.toFixed(2);
+  inputs.depth.value = state.depth.toFixed(2);
+
+  persistState();
+  renderUI();
+}
+
+function persistState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadPersistedState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const saved = JSON.parse(raw);
+    const merged = { ...state, ...saved };
+
+    state.dimensionMode = merged.dimensionMode === 'internal' ? 'internal' : 'external';
+    state.width = safeNumber(merged.width);
+    state.height = safeNumber(merged.height);
+    state.depth = safeNumber(merged.depth);
+    state.woodThickness = safeNumber(merged.woodThickness);
+    state.driverSize = Number.parseInt(merged.driverSize, 10) || 12;
+    state.driverCutout = safeNumber(merged.driverCutout);
+    state.mountingDepth = safeNumber(merged.mountingDepth);
+    state.driverDisplacement = safeNumber(merged.driverDisplacement);
+    state.targetNetVolume = safeNumber(merged.targetNetVolume) || 1.25;
+    state.useMaxConstraints = merged.useMaxConstraints !== false;
+    state.maxBoxWidth = safeNumber(merged.maxBoxWidth) || 38;
+    state.maxBoxHeight = safeNumber(merged.maxBoxHeight) || 16;
+    state.maxBoxDepth = safeNumber(merged.maxBoxDepth) || 22;
+  } catch (_) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+function syncInputsFromState() {
+  inputs.width.value = state.width;
+  inputs.height.value = state.height;
+  inputs.depth.value = state.depth;
+  inputs.woodThickness.value = state.woodThickness;
+  inputs.driverSize.value = String(state.driverSize);
+  inputs.driverCutout.value = state.driverCutout;
+  inputs.mountingDepth.value = state.mountingDepth;
+  inputs.driverDisplacement.value = state.driverDisplacement;
+  inputs.targetNetVolume.value = state.targetNetVolume;
+  inputs.useMaxConstraints.checked = state.useMaxConstraints;
+  inputs.maxBoxWidth.value = state.maxBoxWidth;
+  inputs.maxBoxHeight.value = state.maxBoxHeight;
+  inputs.maxBoxDepth.value = state.maxBoxDepth;
+
+  const modeSelector = `input[name="dimensionMode"][value="${state.dimensionMode}"]`;
+  const modeInput = document.querySelector(modeSelector);
+  if (modeInput) {
+    modeInput.checked = true;
   }
 }
 
@@ -258,7 +597,23 @@ function bindEvents() {
       renderUI();
     });
   });
+
+  document.querySelectorAll('.preset-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const presetValue = safeNumber(button.dataset.preset);
+      state.targetNetVolume = presetValue;
+      inputs.targetNetVolume.value = presetValue.toFixed(2);
+      persistState();
+      renderUI();
+    });
+  });
+
+  outputs.applySuggestedBtn.addEventListener('click', () => {
+    applySuggestedDimensions();
+  });
 }
 
+loadPersistedState();
+syncInputsFromState();
 bindEvents();
 renderUI();

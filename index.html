@@ -22,7 +22,7 @@
 
       <section class="card">
         <h2>Dimensions</h2>
-        <div class="field-grid">
+        <div class="field-grid dimension-grid">
           <label class="field">
             <span>Width (in)</span>
             <input id="width" type="number" min="0" step="0.01" value="30" />
@@ -87,6 +87,61 @@
         </details>
       </section>
 
+      <section class="card">
+        <h2>Target Volume Helper</h2>
+        <div class="field-grid single-row">
+          <label class="field">
+            <span>Desired Net Volume (ft³)</span>
+            <input id="targetNetVolume" type="number" min="0" step="0.01" value="1.25" />
+          </label>
+        </div>
+        <details class="advanced-panel" open>
+          <summary>Vehicle / Trunk Constraints</summary>
+          <label class="check-row">
+            <input id="useMaxConstraints" type="checkbox" checked />
+            <span>Enforce maximum outer box dimensions</span>
+          </label>
+          <div class="field-grid dimension-grid trunk-grid">
+            <label class="field">
+              <span>Max Width (in)</span>
+              <input id="maxBoxWidth" type="number" min="0" step="0.01" value="38" />
+            </label>
+            <label class="field">
+              <span>Max Height (in)</span>
+              <input id="maxBoxHeight" type="number" min="0" step="0.01" value="16" />
+            </label>
+            <label class="field">
+              <span>Max Depth (in)</span>
+              <input id="maxBoxDepth" type="number" min="0" step="0.01" value="22" />
+            </label>
+          </div>
+        </details>
+        <div class="preset-row" id="presetRow" aria-label="Target volume presets">
+          <button type="button" class="preset-btn" data-preset="0.75">0.75 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.00">1.00 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.25">1.25 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.50">1.50 ft³</button>
+          <button type="button" class="preset-btn" data-preset="2.00">2.00 ft³</button>
+        </div>
+        <div class="helper-result">
+          <div class="metric">
+            <span class="label">Suggested Internal Dimensions</span>
+            <span class="value" id="suggestedInternalDimensions">-</span>
+          </div>
+          <div class="metric">
+            <span class="label">Constraint Fit Status</span>
+            <span class="value" id="constraintFitStatus">-</span>
+          </div>
+          <div class="metric">
+            <span class="label">Max Net Volume With Constraints</span>
+            <span class="value" id="maxConstrainedNet">-</span>
+          </div>
+          <button id="applySuggestedBtn" type="button" class="action-btn">
+            Apply Suggested Dimensions
+          </button>
+        </div>
+      </section>
+
       <section class="card outputs">
         <h2>Calculated Output</h2>
         <div class="output-grid">
@@ -111,6 +166,11 @@
             <span class="value" id="netAfter">-</span>
           </div>
         </div>
+      </section>
+
+      <section class="card">
+        <h2>Cut Sheet</h2>
+        <div id="cutSheet" class="cut-sheet"></div>
       </section>
 
       <section class="card warnings-card">
