@@ -1,0 +1,220 @@
+:root {
+  --bg: #060b16;
+  --panel: rgba(11, 20, 39, 0.82);
+  --panel-border: rgba(99, 139, 245, 0.2);
+  --text: #e8efff;
+  --muted: #97a8cc;
+  --accent: #30d5ff;
+  --accent-soft: rgba(48, 213, 255, 0.2);
+  --ok: #4cd4a9;
+  --warn: #ff8b8b;
+  --shadow: 0 18px 42px rgba(1, 4, 12, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 14% 8%, #14346f 0%, transparent 44%),
+    radial-gradient(circle at 90% 82%, #0a3049 0%, transparent 38%),
+    linear-gradient(160deg, #040813 0%, #070f21 55%, #03060e 100%);
+}
+
+.app-shell {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  gap: 0.95rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(9px);
+  padding: 1rem;
+}
+
+.app-header h1 {
+  margin: 0.2rem 0;
+  letter-spacing: 0.03em;
+  font-size: clamp(1.7rem, 5vw, 2.2rem);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.03rem;
+  font-weight: 600;
+}
+
+.field-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field span,
+.metric .label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid rgba(138, 180, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(5, 13, 27, 0.82);
+  color: var(--text);
+  padding: 0.68rem 0.72rem;
+  font: inherit;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.mode-toggle {
+  margin-top: 0.9rem;
+  display: inline-flex;
+  background: rgba(8, 17, 34, 0.95);
+  border-radius: 999px;
+  border: 1px solid rgba(114, 161, 255, 0.26);
+  overflow: hidden;
+}
+
+.mode-toggle label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mode-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mode-toggle span {
+  cursor: pointer;
+  padding: 0.56rem 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mode-toggle input:checked + span {
+  color: #041020;
+  background: linear-gradient(135deg, #2dd6ff, #57f0d1);
+  font-weight: 700;
+}
+
+.advanced-panel {
+  margin-top: 0.9rem;
+  border: 1px solid rgba(126, 163, 255, 0.24);
+  border-radius: 14px;
+  padding: 0.7rem;
+  background: rgba(7, 14, 29, 0.72);
+}
+
+.advanced-panel summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+}
+
+.output-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.metric {
+  border: 1px solid rgba(103, 145, 255, 0.24);
+  border-radius: 13px;
+  background: rgba(8, 16, 31, 0.8);
+  padding: 0.72rem;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.metric .value {
+  font-size: clamp(1rem, 4vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.metric.highlight {
+  border-color: rgba(48, 213, 255, 0.42);
+  box-shadow: 0 0 24px rgba(48, 213, 255, 0.12);
+}
+
+.warnings {
+  margin: 0;
+  padding-left: 1rem;
+  min-height: 1.3rem;
+  color: var(--warn);
+}
+
+.warnings.ok {
+  color: var(--ok);
+  list-style: none;
+  padding-left: 0;
+}
+
+.viz-card svg {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(103, 145, 255, 0.24);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(52, 117, 255, 0.18), transparent 50%),
+    rgba(4, 10, 20, 0.88);
+}
+
+@media (min-width: 720px) {
+  .field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .single-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .output-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric.highlight {
+    grid-column: span 2;
+  }
+}
