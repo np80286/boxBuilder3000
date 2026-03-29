@@ -327,7 +327,7 @@ Do not ask questions. Make reasonable assumptions where needed.
 
 # PROJECT STATUS (March 29, 2026)
 
-Initial version is implemented with:
+Current version is implemented with:
 
 - `index.html`
 - `styles.css`
@@ -341,6 +341,20 @@ Includes:
 - driver defaults and advanced controls
 - live validation warnings
 - live SVG visualization
+- target-volume helper with quick presets
+- suggested dimension apply flow
+- cut-sheet output (panel list with dimensions/qty)
+- localStorage persistence for last-used settings
+- trunk/vehicle max-dimension constraints for fit checks
+- max constrained net-volume estimate
+- compact desktop input sizing for numeric fields
+- SVG scaling and label bounds handling
+
+Trunk baseline defaults (current test vehicle):
+
+- max height: `16 in`
+- max width: `38 in`
+- max depth: `22 in`
 
 ---
 
@@ -368,3 +382,11 @@ When making changes, update `ChatBridge.md` with:
 2. files touched
 3. current known issues
 4. next suggested steps
+
+---
+
+# KNOWN LIMITATIONS
+
+- No automated test suite yet.
+- Static app only (no backend/build step required).
+- Box math is for sealed rectangular enclosures only.

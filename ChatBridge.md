@@ -14,6 +14,9 @@ This file is the shared handoff context between Codex and ChatGPT sessions for t
 - Cut-sheet output is implemented.
 - localStorage persistence is implemented.
 - Dimension input layout has been compacted for desktop density.
+- Dimension numeric inputs are tuned to compact value-sized desktop widths.
+- SVG diagram scaling is expanded to fill panel space with bounded label placement.
+- Trunk constraint defaults are set for test Scion: H 16 in, W 38 in, D 22 in.
 
 ## Files in Scope
 - /Users/np303/dev/boxBuilder/index.html
@@ -36,6 +39,8 @@ This file is the shared handoff context between Codex and ChatGPT sessions for t
 - Added trunk-constraint inputs (max width/height/depth) in target helper.
 - Added constraint-aware target suggestions and constrained max-net readout.
 - Added fit status messaging and validation warning when current box exceeds trunk limits.
+- Tightened desktop numeric input width further for compact value-focused controls.
+- Increased SVG scale utilization and fixed off-screen dimension label clipping.
 
 ## Known Issues / Notes
 - No automated tests yet.
