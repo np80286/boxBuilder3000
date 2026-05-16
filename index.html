@@ -94,44 +94,6 @@
         </details>
       </section>
 
-      <section class="card tab-panel" data-panel="design">
-        <h2>Target Volume Helper</h2>
-        <div class="field-grid single-row">
-          <label class="field">
-            <span>Desired Net Volume (ft³)</span>
-            <input id="targetNetVolume" type="number" min="0" step="0.01" value="1.25" />
-          </label>
-        </div>
-        <div class="preset-row" id="presetRow" aria-label="Target volume presets">
-          <button type="button" class="preset-btn" data-preset="0.75">0.75 ft³</button>
-          <button type="button" class="preset-btn" data-preset="1.00">1.00 ft³</button>
-          <button type="button" class="preset-btn" data-preset="1.25">1.25 ft³</button>
-          <button type="button" class="preset-btn" data-preset="1.50">1.50 ft³</button>
-          <button type="button" class="preset-btn" data-preset="2.00">2.00 ft³</button>
-        </div>
-        <div class="helper-result">
-          <div class="metric">
-            <span class="label">Suggested Internal Dimensions</span>
-            <span class="value" id="suggestedInternalDimensions">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">Suggested Driver Fit</span>
-            <span class="value" id="suggestedDriverFit">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">Constraint Fit Status</span>
-            <span class="value" id="constraintFitStatus">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">Max Net Volume With Constraints</span>
-            <span class="value" id="maxConstrainedNet">-</span>
-          </div>
-          <button id="applySuggestedBtn" type="button" class="action-btn">
-            Apply Suggested Dimensions
-          </button>
-        </div>
-      </section>
-
       <section class="card viz-card tab-panel" data-panel="design">
         <h2>Live Box Diagram</h2>
         <svg
@@ -204,10 +166,32 @@
             <input type="radio" name="dimensionMode" value="internal" />
             <span>Internal</span>
           </label>
+      <section class="card tab-panel" data-panel="design">
+        <h2>Quick Volume Sizing</h2>
+        <p class="section-hint">Get suggested box dimensions for a target volume.</p>
+        <div class="field-grid single-row">
+          <label class="field">
+            <span>Desired Net Volume (ft³)</span>
+            <input id="targetNetVolume" type="number" min="0" step="0.01" value="1.25" />
+          </label>
+        </div>
+        <div class="preset-row" id="presetRow" aria-label="Target volume presets">
+          <button type="button" class="preset-btn" data-preset="0.75">0.75 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.00">1.00 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.25">1.25 ft³</button>
+          <button type="button" class="preset-btn" data-preset="1.50">1.50 ft³</button>
+          <button type="button" class="preset-btn" data-preset="2.00">2.00 ft³</button>
+        </div>
+        <div class="helper-result">
+          <div class="metric">
+            <span class="label">Suggested Internal Dimensions</span>
+            <span class="value" id="suggestedInternalDimensions">-</span>
+          </div>
+          <button id="applySuggestedBtn" type="button" class="action-btn">
+            Apply Suggested Dimensions
+          </button>
         </div>
       </section>
-
-      <section class="card tab-panel" data-panel="build" hidden>
         <h2>Cut Sheet</h2>
         <p class="build-note">
           Build view keeps construction details separate from sizing workflow.

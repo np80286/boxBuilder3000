@@ -50,9 +50,6 @@ const outputs = {
   warnings: document.getElementById('warnings'),
   diagram: document.getElementById('boxDiagram'),
   suggestedInternalDimensions: document.getElementById('suggestedInternalDimensions'),
-  suggestedDriverFit: document.getElementById('suggestedDriverFit'),
-  constraintFitStatus: document.getElementById('constraintFitStatus'),
-  maxConstrainedNet: document.getElementById('maxConstrainedNet'),
   cutSheet: document.getElementById('cutSheet'),
   applySuggestedBtn: document.getElementById('applySuggestedBtn')
 };
@@ -454,53 +451,10 @@ function renderUI() {
 
   if (suggestedInternal) {
     outputs.suggestedInternalDimensions.textContent = formatDimensionsLabeled(suggestedInternal);
-
-    const hFits = suggestedInternal.height >= state.driverCutout;
-    const wFits = suggestedInternal.width >= state.driverCutout;
-    if (hFits && wFits) {
-      outputs.suggestedDriverFit.textContent = `Fits: cutout ${state.driverCutout.toFixed(2)} in within W/H`;
-    } else {
-      const reasons = [];
-      if (!wFits) {
-        reasons.push(`W ${suggestedInternal.width.toFixed(2)} < cutout ${state.driverCutout.toFixed(2)}`);
-      }
-      if (!hFits) {
-        reasons.push(`H ${suggestedInternal.height.toFixed(2)} < cutout ${state.driverCutout.toFixed(2)}`);
-      }
-      outputs.suggestedDriverFit.textContent = `Does not fit: ${reasons.join(', ')}`;
-    }
-
     outputs.applySuggestedBtn.disabled = false;
   } else {
     outputs.suggestedInternalDimensions.textContent = '-';
-    outputs.suggestedDriverFit.textContent = '-';
     outputs.applySuggestedBtn.disabled = true;
-  }
-
-  if (!constraintData.enabled) {
-    outputs.constraintFitStatus.textContent = 'Constraints disabled';
-    outputs.maxConstrainedNet.textContent = '-';
-  } else if (!constraintData.maxInternal || constraintData.maxNet === null) {
-    outputs.constraintFitStatus.textContent = 'Invalid max dimensions';
-    outputs.maxConstrainedNet.textContent = 'N/A';
-  } else if (constraintData.fitsCurrent) {
-    outputs.constraintFitStatus.textContent = suggestedResult.constrained
-      ? 'Current fits, target exceeds trunk max'
-      : 'Current fits within trunk limits';
-    outputs.maxConstrainedNet.textContent = `${constraintData.maxNet.toFixed(3)} ft³`;
-  } else {
-    const parts = [];
-    if (constraintData.overBy.width > 0) {
-      parts.push(`W +${constraintData.overBy.width.toFixed(2)} in`);
-    }
-    if (constraintData.overBy.height > 0) {
-      parts.push(`H +${constraintData.overBy.height.toFixed(2)} in`);
-    }
-    if (constraintData.overBy.depth > 0) {
-      parts.push(`D +${constraintData.overBy.depth.toFixed(2)} in`);
-    }
-    outputs.constraintFitStatus.textContent = `Over max: ${parts.join(', ')}`;
-    outputs.maxConstrainedNet.textContent = `${constraintData.maxNet.toFixed(3)} ft³`;
   }
 
   renderWarnings(warnings);
