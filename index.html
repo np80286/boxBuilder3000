@@ -72,10 +72,14 @@
           </label>
         </div>
         
-        <div class="field-grid single-row" style="margin-top: 0.7rem;">
+        <div class="field-grid" style="margin-top: 0.7rem;">
           <label class="field">
             <span>Driver Displacement (ft³) — Reduces usable volume</span>
             <input id="driverDisplacement" type="number" min="0" step="0.001" value="0.08" />
+          </label>
+          <label class="field">
+            <span>Driver Depth (in)</span>
+            <input id="driverDepth" type="number" min="0" step="0.1" value="6.5" />
           </label>
         </div>
 
@@ -89,6 +93,14 @@
             <label class="field">
               <span>Mounting Depth (in)</span>
               <input id="mountingDepth" type="number" min="0" step="0.01" value="6.5" />
+            </label>
+            <label class="field">
+              <span>Sensitivity (dB @ 1W/1m)</span>
+              <input id="driverSensitivity" type="number" min="0" step="0.1" value="88" />
+            </label>
+            <label class="field">
+              <span>Voice Coil Diameter (in)</span>
+              <input id="voiceCoilDiameter" type="number" min="0" step="0.25" value="2.0" />
             </label>
           </div>
         </details>

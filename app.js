@@ -8,8 +8,11 @@ const state = {
   woodThickness: 0.75,
   driverSize: 12,
   driverCutout: 11.1,
+  driverDepth: 6.5,
   mountingDepth: 6.5,
   driverDisplacement: 0.08,
+  driverSensitivity: 88,
+  voiceCoilDiameter: 2.0,
   targetNetVolume: 1.25,
   useMaxConstraints: true,
   maxBoxWidth: 38,
@@ -18,11 +21,11 @@ const state = {
 };
 
 const DRIVER_DEFAULTS = {
-  8: { cutout: 7.25, depth: 4.5, displacement: 0.03 },
-  10: { cutout: 9.25, depth: 5.5, displacement: 0.05 },
-  12: { cutout: 11.1, depth: 6.5, displacement: 0.08 },
-  15: { cutout: 13.8, depth: 7.5, displacement: 0.14 },
-  18: { cutout: 16.6, depth: 9.0, displacement: 0.22 }
+  8: { cutout: 7.25, depth: 4.5, displacement: 0.03, sensitivity: 84, voiceCoil: 1.0 },
+  10: { cutout: 9.25, depth: 5.5, displacement: 0.05, sensitivity: 86, voiceCoil: 1.5 },
+  12: { cutout: 11.1, depth: 6.5, displacement: 0.08, sensitivity: 88, voiceCoil: 2.0 },
+  15: { cutout: 13.8, depth: 7.5, displacement: 0.14, sensitivity: 86, voiceCoil: 2.5 },
+  18: { cutout: 16.6, depth: 9.0, displacement: 0.22, sensitivity: 88, voiceCoil: 3.0 }
 };
 
 const inputs = {
@@ -32,8 +35,11 @@ const inputs = {
   woodThickness: document.getElementById('woodThickness'),
   driverSize: document.getElementById('driverSize'),
   driverCutout: document.getElementById('driverCutout'),
+  driverDepth: document.getElementById('driverDepth'),
   mountingDepth: document.getElementById('mountingDepth'),
   driverDisplacement: document.getElementById('driverDisplacement'),
+  driverSensitivity: document.getElementById('driverSensitivity'),
+  voiceCoilDiameter: document.getElementById('voiceCoilDiameter'),
   targetNetVolume: document.getElementById('targetNetVolume'),
   useMaxConstraints: document.getElementById('useMaxConstraints'),
   maxBoxWidth: document.getElementById('maxBoxWidth'),
@@ -470,6 +476,7 @@ function syncStateFromInputs(changedKey) {
   state.woodThickness = safeNumber(inputs.woodThickness.value);
   state.driverSize = Number.parseInt(inputs.driverSize.value, 10);
   state.driverCutout = safeNumber(inputs.driverCutout.value);
+  state.driverDepth = safeNumber(inputs.driverDepth.value);
   state.mountingDepth = safeNumber(inputs.mountingDepth.value);
   state.driverDisplacement = safeNumber(inputs.driverDisplacement.value);
   state.targetNetVolume = safeNumber(inputs.targetNetVolume.value);
@@ -487,10 +494,12 @@ function syncStateFromInputs(changedKey) {
     const defaults = DRIVER_DEFAULTS[state.driverSize];
     if (defaults) {
       state.driverCutout = defaults.cutout;
+      state.driverDepth = defaults.depth;
       state.mountingDepth = defaults.depth;
       state.driverDisplacement = defaults.displacement;
 
       inputs.driverCutout.value = defaults.cutout;
+      inputs.driverDepth.value = defaults.depth;
       inputs.mountingDepth.value = defaults.depth;
       inputs.driverDisplacement.value = defaults.displacement;
     }
@@ -567,8 +576,11 @@ function syncInputsFromState() {
   inputs.woodThickness.value = state.woodThickness;
   inputs.driverSize.value = String(state.driverSize);
   inputs.driverCutout.value = state.driverCutout;
+  inputs.driverDepth.value = state.driverDepth;
   inputs.mountingDepth.value = state.mountingDepth;
   inputs.driverDisplacement.value = state.driverDisplacement;
+  inputs.driverSensitivity.value = state.driverSensitivity;
+  inputs.voiceCoilDiameter.value = state.voiceCoilDiameter;
   inputs.targetNetVolume.value = state.targetNetVolume;
   inputs.useMaxConstraints.checked = state.useMaxConstraints;
   inputs.maxBoxWidth.value = state.maxBoxWidth;
