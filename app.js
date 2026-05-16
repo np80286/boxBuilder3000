@@ -417,6 +417,20 @@ function renderPresetState() {
   });
 }
 
+function updateSpaceInfo() {
+  const spaceInfoEl = document.getElementById('spaceInfo');
+  if (!spaceInfoEl) return;
+
+  if (!state.useMaxConstraints) {
+    spaceInfoEl.textContent = 'Constraints disabled';
+    return;
+  }
+
+  const maxIn3 = state.maxBoxWidth * state.maxBoxHeight * state.maxBoxDepth;
+  const maxFt3 = maxIn3 / 1728;
+  spaceInfoEl.textContent = `Available trunk space: ${maxFt3.toFixed(2)} ft³`;
+}
+
 function renderUI() {
   const internalDimensions = getInternalDimensions(state);
   const externalDimensions = getExternalDimensions(state);
@@ -424,6 +438,8 @@ function renderUI() {
   const internalVolume = getVolume(internalDimensions);
   const netAfter = getNetVolume(internalVolume.ft3, state.driverDisplacement);
   const warnings = validateBox(state, internalDimensions);
+
+  updateSpaceInfo();
 
   const unconstrainedSuggested = getSuggestedInternalDimensions(state, internalDimensions);
   const constraintData = getConstraintData(state, externalDimensions);

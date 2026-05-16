@@ -29,41 +29,36 @@
         </button>
       </nav>
 
-      <section class="card tab-panel" data-panel="design">
-        <h2>Dimensions</h2>
-        <div class="field-grid dimension-grid">
-          <label class="field">
-            <span>Width (in)</span>
-            <input id="width" type="number" min="0" step="0.01" value="30" />
-          </label>
-          <label class="field">
-            <span>Height (in)</span>
-            <input id="height" type="number" min="0" step="0.01" value="15" />
-          </label>
-          <label class="field">
-            <span>Depth (in)</span>
-            <input id="depth" type="number" min="0" step="0.01" value="14" />
-          </label>
-          <label class="field">
-            <span>Wood Thickness (in)</span>
-            <input id="woodThickness" type="number" min="0" step="0.01" value="0.75" />
-          </label>
-        </div>
-
-        <div class="mode-toggle" role="radiogroup" aria-label="Dimension mode">
-          <label>
-            <input type="radio" name="dimensionMode" value="external" checked />
-            <span>External</span>
-          </label>
-          <label>
-            <input type="radio" name="dimensionMode" value="internal" />
-            <span>Internal</span>
-          </label>
-        </div>
+      <section class="card workflow-guide">
+        <p class="workflow-text">📋 Set trunk limits → 🔊 Choose driver → 🎯 Target volume → ✨ Get dimensions</p>
       </section>
 
       <section class="card tab-panel" data-panel="design">
-        <h2>Driver</h2>
+        <h2>Maximum Trunk / Hatch Area</h2>
+        <p class="section-hint">These are the hard limits for your enclosure based on available space.</p>
+        <label class="check-row">
+          <input id="useMaxConstraints" type="checkbox" checked />
+          <span>Use trunk constraints</span>
+        </label>
+        <div class="field-grid dimension-grid trunk-grid">
+          <label class="field">
+            <span>Max Width (in)</span>
+            <input id="maxBoxWidth" type="number" min="0" step="0.01" value="38" />
+          </label>
+          <label class="field">
+            <span>Max Height (in)</span>
+            <input id="maxBoxHeight" type="number" min="0" step="0.01" value="16" />
+          </label>
+          <label class="field">
+            <span>Max Depth (in)</span>
+            <input id="maxBoxDepth" type="number" min="0" step="0.01" value="22" />
+          </label>
+        </div>
+        <div class="space-info" id="spaceInfo">Available space: calculating...</div>
+      </section>
+
+      <section class="card tab-panel" data-panel="design">
+        <h2>Driver Selection</h2>
         <div class="field-grid single-row">
           <label class="field">
             <span>Driver Size (in)</span>
@@ -76,9 +71,16 @@
             </select>
           </label>
         </div>
+        
+        <div class="field-grid single-row" style="margin-top: 0.7rem;">
+          <label class="field">
+            <span>Driver Displacement (ft³) — Reduces usable volume</span>
+            <input id="driverDisplacement" type="number" min="0" step="0.001" value="0.08" />
+          </label>
+        </div>
 
         <details class="advanced-panel" id="advancedPanel">
-          <summary>Advanced</summary>
+          <summary>Advanced Driver Settings</summary>
           <div class="field-grid">
             <label class="field">
               <span>Driver Cutout Diameter (in)</span>
@@ -87,10 +89,6 @@
             <label class="field">
               <span>Mounting Depth (in)</span>
               <input id="mountingDepth" type="number" min="0" step="0.01" value="6.5" />
-            </label>
-            <label class="field">
-              <span>Driver Displacement (ft³)</span>
-              <input id="driverDisplacement" type="number" min="0" step="0.001" value="0.08" />
             </label>
           </div>
         </details>
@@ -104,27 +102,6 @@
             <input id="targetNetVolume" type="number" min="0" step="0.01" value="1.25" />
           </label>
         </div>
-        <details class="advanced-panel" open>
-          <summary>Vehicle / Trunk Constraints</summary>
-          <label class="check-row">
-            <input id="useMaxConstraints" type="checkbox" checked />
-            <span>Enforce maximum outer box dimensions</span>
-          </label>
-          <div class="field-grid dimension-grid trunk-grid">
-            <label class="field">
-              <span>Max Width (in)</span>
-              <input id="maxBoxWidth" type="number" min="0" step="0.01" value="38" />
-            </label>
-            <label class="field">
-              <span>Max Height (in)</span>
-              <input id="maxBoxHeight" type="number" min="0" step="0.01" value="16" />
-            </label>
-            <label class="field">
-              <span>Max Depth (in)</span>
-              <input id="maxBoxDepth" type="number" min="0" step="0.01" value="22" />
-            </label>
-          </div>
-        </details>
         <div class="preset-row" id="presetRow" aria-label="Target volume presets">
           <button type="button" class="preset-btn" data-preset="0.75">0.75 ft³</button>
           <button type="button" class="preset-btn" data-preset="1.00">1.00 ft³</button>
@@ -155,7 +132,17 @@
         </div>
       </section>
 
-      <section class="card outputs tab-panel" data-panel="design">
+      <section class="card viz-card tab-panel" data-panel="design">
+        <h2>Live Box Diagram</h2>
+        <svg
+          id="boxDiagram"
+          viewBox="0 0 420 260"
+          role="img"
+          aria-label="Speaker enclosure diagram"
+        ></svg>
+      </section>
+
+      <section class="card outputs sticky-results tab-panel" data-panel="design">
         <h2>Calculated Output</h2>
         <div class="output-grid">
           <div class="metric">
@@ -186,14 +173,38 @@
         <ul id="warnings" class="warnings" aria-live="polite"></ul>
       </section>
 
-      <section class="card viz-card tab-panel" data-panel="design">
-        <h2>Live Box Diagram</h2>
-        <svg
-          id="boxDiagram"
-          viewBox="0 0 420 260"
-          role="img"
-          aria-label="Speaker enclosure diagram"
-        ></svg>
+      <section class="card tab-panel" data-panel="design">
+        <h2>Manual Box Calculator</h2>
+        <p class="section-hint">Manually enter dimensions to calculate volume, or use the Target Volume Helper above to get suggestions.</p>
+        <div class="field-grid dimension-grid">
+          <label class="field">
+            <span>Width (in)</span>
+            <input id="width" type="number" min="0" step="0.01" value="30" />
+          </label>
+          <label class="field">
+            <span>Height (in)</span>
+            <input id="height" type="number" min="0" step="0.01" value="15" />
+          </label>
+          <label class="field">
+            <span>Depth (in)</span>
+            <input id="depth" type="number" min="0" step="0.01" value="14" />
+          </label>
+          <label class="field">
+            <span>Wood Thickness (in)</span>
+            <input id="woodThickness" type="number" min="0" step="0.01" value="0.75" />
+          </label>
+        </div>
+
+        <div class="mode-toggle" role="radiogroup" aria-label="Dimension mode">
+          <label>
+            <input type="radio" name="dimensionMode" value="external" checked />
+            <span>External</span>
+          </label>
+          <label>
+            <input type="radio" name="dimensionMode" value="internal" />
+            <span>Internal</span>
+          </label>
+        </div>
       </section>
 
       <section class="card tab-panel" data-panel="build" hidden>

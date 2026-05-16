@@ -298,6 +298,156 @@ select:focus {
   background: rgba(7, 14, 29, 0.74);
 }
 
+.workflow-guide {
+  background: linear-gradient(135deg, rgba(45, 214, 255, 0.12), rgba(87, 240, 209, 0.08));
+  border-color: rgba(45, 214, 255, 0.3);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.workflow-text {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.section-hint {
+  margin: 0 0 0.7rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.space-info {
+  margin-top: 0.7rem;
+  padding: 0.6rem;
+  background: rgba(48, 213, 255, 0.08);
+  border: 1px solid rgba(48, 213, 255, 0.2);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-align: center;
+}
+
+.sticky-results {
+  position: sticky;
+  top: 1rem;
+  z-index: 10;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 0.7rem;
+    gap: 0.7rem;
+  }
+
+  .card {
+    padding: 0.8rem;
+    border-radius: 14px;
+  }
+
+  h2 {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .field-grid {
+    gap: 0.5rem;
+  }
+
+  .sticky-results {
+    position: static;
+    margin: 0.5rem 0;
+    background: linear-gradient(135deg, rgba(45, 214, 255, 0.15), rgba(87, 240, 209, 0.1));
+    border-color: rgba(45, 214, 255, 0.35);
+  }
+
+  .output-grid {
+    gap: 0.5rem;
+  }
+
+  .metric {
+    padding: 0.6rem;
+  }
+
+  .metric .value {
+    font-size: 1rem;
+  }
+
+  .preset-row {
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+  }
+
+  .preset-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    flex: 1 1 calc(50% - 0.2rem);
+  }
+
+  details.advanced-panel {
+    padding: 0.5rem;
+  }
+
+  .tab-nav {
+    gap: 0.4rem;
+  }
+
+  .tab-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .mode-toggle {
+    width: 100%;
+    margin-top: 0.7rem;
+  }
+
+  .mode-toggle label {
+    flex: 1;
+  }
+
+  .mode-toggle span {
+    display: block;
+    text-align: center;
+    padding: 0.5rem;
+  }
+
+  .workflow-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-shell {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .card {
+    padding: 0.7rem;
+  }
+
+  h2 {
+    font-size: 0.9rem;
+  }
+
+  .metric .value {
+    font-size: 0.95rem;
+  }
+
+  input,
+  select {
+    padding: 0.6rem;
+    font-size: 16px;
+  }
+
+  .preset-btn {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+}
+
 .cut-sheet table {
   width: 100%;
   border-collapse: collapse;
