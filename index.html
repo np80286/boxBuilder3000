@@ -20,7 +20,16 @@
         <p class="subtitle">Subwoofer enclosure calculator</p>
       </header>
 
-      <section class="card">
+      <nav class="tab-nav card" aria-label="Workspace views">
+        <button type="button" class="tab-btn is-active" data-tab="design" aria-selected="true">
+          Design
+        </button>
+        <button type="button" class="tab-btn" data-tab="build" aria-selected="false">
+          Build
+        </button>
+      </nav>
+
+      <section class="card tab-panel" data-panel="design">
         <h2>Dimensions</h2>
         <div class="field-grid dimension-grid">
           <label class="field">
@@ -53,7 +62,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card tab-panel" data-panel="design">
         <h2>Driver</h2>
         <div class="field-grid single-row">
           <label class="field">
@@ -87,7 +96,7 @@
         </details>
       </section>
 
-      <section class="card">
+      <section class="card tab-panel" data-panel="design">
         <h2>Target Volume Helper</h2>
         <div class="field-grid single-row">
           <label class="field">
@@ -129,6 +138,10 @@
             <span class="value" id="suggestedInternalDimensions">-</span>
           </div>
           <div class="metric">
+            <span class="label">Suggested Driver Fit</span>
+            <span class="value" id="suggestedDriverFit">-</span>
+          </div>
+          <div class="metric">
             <span class="label">Constraint Fit Status</span>
             <span class="value" id="constraintFitStatus">-</span>
           </div>
@@ -142,7 +155,7 @@
         </div>
       </section>
 
-      <section class="card outputs">
+      <section class="card outputs tab-panel" data-panel="design">
         <h2>Calculated Output</h2>
         <div class="output-grid">
           <div class="metric">
@@ -168,17 +181,12 @@
         </div>
       </section>
 
-      <section class="card">
-        <h2>Cut Sheet</h2>
-        <div id="cutSheet" class="cut-sheet"></div>
-      </section>
-
-      <section class="card warnings-card">
+      <section class="card warnings-card tab-panel" data-panel="design">
         <h2>Status</h2>
         <ul id="warnings" class="warnings" aria-live="polite"></ul>
       </section>
 
-      <section class="card viz-card">
+      <section class="card viz-card tab-panel" data-panel="design">
         <h2>Live Box Diagram</h2>
         <svg
           id="boxDiagram"
@@ -186,6 +194,14 @@
           role="img"
           aria-label="Speaker enclosure diagram"
         ></svg>
+      </section>
+
+      <section class="card tab-panel" data-panel="build" hidden>
+        <h2>Cut Sheet</h2>
+        <p class="build-note">
+          Build view keeps construction details separate from sizing workflow.
+        </p>
+        <div id="cutSheet" class="cut-sheet"></div>
       </section>
     </main>
 

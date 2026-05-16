@@ -50,11 +50,24 @@ const outputs = {
   warnings: document.getElementById('warnings'),
   diagram: document.getElementById('boxDiagram'),
   suggestedInternalDimensions: document.getElementById('suggestedInternalDimensions'),
+  suggestedDriverFit: document.getElementById('suggestedDriverFit'),
   constraintFitStatus: document.getElementById('constraintFitStatus'),
   maxConstrainedNet: document.getElementById('maxConstrainedNet'),
   cutSheet: document.getElementById('cutSheet'),
   applySuggestedBtn: document.getElementById('applySuggestedBtn')
 };
+
+function setActiveTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach((button) => {
+    const isActive = button.dataset.tab === tabName;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
+
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.hidden = panel.dataset.panel !== tabName;
+  });
+}
 
 function safeNumber(value) {
   const parsed = Number.parseFloat(value);
@@ -67,6 +80,10 @@ function formatInches(n) {
 
 function formatDimensions(dim) {
   return `${dim.width.toFixed(2)} × ${dim.height.toFixed(2)} × ${dim.depth.toFixed(2)} in`;
+}
+
+function formatDimensionsLabeled(dim) {
+  return `W: ${dim.width.toFixed(2)} in | H: ${dim.height.toFixed(2)} in | D: ${dim.depth.toFixed(2)} in`;
 }
 
 function getInternalDimensions(currentState) {
@@ -420,10 +437,27 @@ function renderUI() {
   outputs.netAfter.textContent = `${netAfter.toFixed(3)} ft³`;
 
   if (suggestedInternal) {
-    outputs.suggestedInternalDimensions.textContent = formatDimensions(suggestedInternal);
+    outputs.suggestedInternalDimensions.textContent = formatDimensionsLabeled(suggestedInternal);
+
+    const hFits = suggestedInternal.height >= state.driverCutout;
+    const wFits = suggestedInternal.width >= state.driverCutout;
+    if (hFits && wFits) {
+      outputs.suggestedDriverFit.textContent = `Fits: cutout ${state.driverCutout.toFixed(2)} in within W/H`;
+    } else {
+      const reasons = [];
+      if (!wFits) {
+        reasons.push(`W ${suggestedInternal.width.toFixed(2)} < cutout ${state.driverCutout.toFixed(2)}`);
+      }
+      if (!hFits) {
+        reasons.push(`H ${suggestedInternal.height.toFixed(2)} < cutout ${state.driverCutout.toFixed(2)}`);
+      }
+      outputs.suggestedDriverFit.textContent = `Does not fit: ${reasons.join(', ')}`;
+    }
+
     outputs.applySuggestedBtn.disabled = false;
   } else {
     outputs.suggestedInternalDimensions.textContent = '-';
+    outputs.suggestedDriverFit.textContent = '-';
     outputs.applySuggestedBtn.disabled = true;
   }
 
@@ -611,9 +645,16 @@ function bindEvents() {
   outputs.applySuggestedBtn.addEventListener('click', () => {
     applySuggestedDimensions();
   });
+
+  document.querySelectorAll('.tab-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      setActiveTab(button.dataset.tab || 'design');
+    });
+  });
 }
 
 loadPersistedState();
 syncInputsFromState();
 bindEvents();
+setActiveTab('design');
 renderUI();
