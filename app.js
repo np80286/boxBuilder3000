@@ -243,13 +243,17 @@ function parsePartsSpec(text) {
   // Try fallback patterns: lines with 'Sealed' or 'Vented' + number + 'ft' or 'Hz'
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   for (const l of lines) {
-    const m1 = l.match(/sealed[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
+    // more permissive: 'Sealed Volume   2.1ft³' or 'Sealed 2.1 ft3'
+    const m1 = l.match(/sealed[^0-9\n]*([0-9]+(?:\.[0-9]+)?)(?:\s*ft|ft|ft\u00B3)?/i);
     if (m1 && !out.sealedVolume) out.sealedVolume = parseFloat(m1[1]);
-    const m2 = l.match(/(?:vented|ported)[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
+
+    const m2 = l.match(/(?:vented|ported)[^0-9\n]*([0-9]+(?:\.[0-9]+)?)(?:\s*ft|ft|ft\u00B3)?/i);
     if (m2 && !out.ventedVolume) out.ventedVolume = parseFloat(m2[1]);
-    const m3 = l.match(/sealed[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+
+    const m3 = l.match(/sealed[^0-9\n]*f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
     if (m3 && !out.sealedF3) out.sealedF3 = Math.round(parseFloat(m3[1]));
-    const m4 = l.match(/(?:vented|ported)[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+
+    const m4 = l.match(/(?:vented|ported)[^0-9\n]*f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
     if (m4 && !out.ventedF3) out.ventedF3 = Math.round(parseFloat(m4[1]));
   }
 
