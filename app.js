@@ -601,12 +601,10 @@ function syncStateFromInputs(changedKey) {
 
 function applySuggestedDimensions() {
   const internalDimensions = getInternalDimensions(state);
-  const unconstrainedSuggested = getSuggestedInternalDimensions(state, internalDimensions);
-  const constraintData = getConstraintData(state, getExternalDimensions(state));
-  const suggestedInternal = applyConstraintToSuggested(state, unconstrainedSuggested, constraintData).internal;
-  if (!suggestedInternal) {
-    return;
-  }
+    const unconstrainedSuggested = getSuggestedInternalDimensions(state, internalDimensions);
+    const constraintData = getConstraintData(state, getExternalDimensions(state));
+    const suggestedInternal = applyConstraintToSuggested(state, unconstrainedSuggested, constraintData).internal;
+    if (!suggestedInternal) return;
 
   if (state.dimensionMode === 'internal') {
     state.width = suggestedInternal.width;
@@ -713,13 +711,8 @@ function bindEvents() {
       state.targetNetVolume = presetValue;
       inputs.targetNetVolume.value = presetValue.toFixed(2);
       persistState();
-      // After applying preview values, also apply suggested dimensions so the box updates
-      renderUI();
-      // small delay to ensure UI updated before applying suggested dims
-      setTimeout(() => {
-        applySuggestedDimensions();
         renderUI();
-      }, 40);
+        applySuggestedDimensions();
     });
   });
 
