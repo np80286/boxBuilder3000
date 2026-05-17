@@ -47,6 +47,12 @@ const inputs = {
   partsSpecPaste: document.getElementById('partsSpecPaste'),
   parsePartsBtn: document.getElementById('parsePartsBtn'),
   clearPartsBtn: document.getElementById('clearPartsBtn'),
+  parsedSealedVolume: document.getElementById('parsedSealedVolume'),
+  parsedVentedVolume: document.getElementById('parsedVentedVolume'),
+  parsedSealedF3: document.getElementById('parsedSealedF3'),
+  parsedVentedF3: document.getElementById('parsedVentedF3'),
+  applyParsedBtn: document.getElementById('applyParsedBtn'),
+  resetParsedBtn: document.getElementById('resetParsedBtn'),
   targetNetVolume: document.getElementById('targetNetVolume'),
   useMaxConstraints: document.getElementById('useMaxConstraints'),
   maxBoxWidth: document.getElementById('maxBoxWidth'),
@@ -224,10 +230,10 @@ function parsePartsSpec(text) {
   const out = {};
 
   // Match volumes like 'Sealed Volume\t2.1ft³' or 'Sealed Volume: 2.1 ft^3' etc.
-  const sealedVol = text.match(/sealed\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
-  const ventedVol = text.match(/vented|ported\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
-  const sealedF3 = text.match(/sealed\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
-  const ventedF3 = text.match(/vented|ported\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const sealedVol = text.match(/(?:sealed)\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const ventedVol = text.match(/(?:vented|ported)\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const sealedF3 = text.match(/(?:sealed)\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const ventedF3 = text.match(/(?:vented|ported)\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
 
   if (sealedVol) out.sealedVolume = parseFloat(sealedVol[1]);
   if (ventedVol) out.ventedVolume = parseFloat(ventedVol[1]);
@@ -239,15 +245,48 @@ function parsePartsSpec(text) {
   for (const l of lines) {
     const m1 = l.match(/sealed[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
     if (m1 && !out.sealedVolume) out.sealedVolume = parseFloat(m1[1]);
-    const m2 = l.match(/vented|ported[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
+    const m2 = l.match(/(?:vented|ported)[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
     if (m2 && !out.ventedVolume) out.ventedVolume = parseFloat(m2[1]);
     const m3 = l.match(/sealed[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
     if (m3 && !out.sealedF3) out.sealedF3 = Math.round(parseFloat(m3[1]));
-    const m4 = l.match(/vented|ported[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+    const m4 = l.match(/(?:vented|ported)[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
     if (m4 && !out.ventedF3) out.ventedF3 = Math.round(parseFloat(m4[1]));
   }
 
   return Object.keys(out).length ? out : null;
+}
+
+// Track last parsed values to allow reset vs manual edits
+let lastParsed = null;
+
+function populateParsedPreview(parsed) {
+  lastParsed = parsed ? { ...parsed } : null;
+  if (!inputs.parsedSealedVolume) return;
+
+  const setVal = (el, v) => {
+    if (v === undefined || v === null) {
+      el.value = '';
+      el.dataset.original = '';
+    } else {
+      el.value = String(v);
+      el.dataset.original = String(v);
+    }
+    el.classList.remove('modified');
+  };
+
+  setVal(inputs.parsedSealedVolume, parsed && parsed.sealedVolume ? parsed.sealedVolume.toFixed(2) : '');
+  setVal(inputs.parsedVentedVolume, parsed && parsed.ventedVolume ? parsed.ventedVolume.toFixed(2) : '');
+  setVal(inputs.parsedSealedF3, parsed && parsed.sealedF3 ? parsed.sealedF3 : '');
+  setVal(inputs.parsedVentedF3, parsed && parsed.ventedF3 ? parsed.ventedF3 : '');
+}
+
+function markIfModified(el) {
+  const orig = el.dataset.original || '';
+  if (String(el.value) !== String(orig)) {
+    el.classList.add('modified');
+  } else {
+    el.classList.remove('modified');
+  }
 }
 
 function getConstraintData(currentState, externalDimensions) {
@@ -702,12 +741,59 @@ function bindEvents() {
           // nothing
         }
         persistState();
+        // populate preview inputs and render
+        populateParsedPreview(parsed);
         renderUI();
       }
     });
 
     inputs.clearPartsBtn.addEventListener('click', () => {
       inputs.partsSpecPaste.value = '';
+      populateParsedPreview(null);
+    });
+  }
+
+  // Preview apply/reset
+  if (inputs.applyParsedBtn) {
+    inputs.applyParsedBtn.addEventListener('click', () => {
+      // Apply whatever is in the preview inputs (allow manual adjustments)
+      const sv = safeNumber(inputs.parsedSealedVolume.value);
+      const vv = safeNumber(inputs.parsedVentedVolume.value);
+      const sf = Number.parseInt(inputs.parsedSealedF3.value, 10) || 0;
+      const vf = Number.parseInt(inputs.parsedVentedF3.value, 10) || 0;
+
+      if (state.enclosureType === 'sealed' && sv > 0) {
+        state.targetNetVolume = sv;
+        inputs.targetNetVolume.value = sv.toFixed(2);
+        if (sf > 0) {
+          state.tuningFrequency = sf;
+          inputs.tuningFrequency.value = sf;
+        }
+      }
+
+      if (state.enclosureType === 'ported' && vv > 0) {
+        state.targetNetVolume = vv;
+        inputs.targetNetVolume.value = vv.toFixed(2);
+        if (vf > 0) {
+          state.tuningFrequency = vf;
+          inputs.tuningFrequency.value = vf;
+        }
+      }
+
+      persistState();
+      renderUI();
+    });
+
+    inputs.resetParsedBtn.addEventListener('click', () => {
+      // reset preview to last parsed values from paste
+      populateParsedPreview(lastParsed);
+    });
+
+    // Track manual edits on preview fields
+    ['parsedSealedVolume', 'parsedVentedVolume', 'parsedSealedF3', 'parsedVentedF3'].forEach((id) => {
+      const el = inputs[id];
+      if (!el) return;
+      el.addEventListener('input', () => markIfModified(el));
     });
   }
 
