@@ -18,6 +18,7 @@
         <p class="kicker">Enclosure Design Utility</p>
         <h1>Box Builder</h1>
         <p class="subtitle">Subwoofer enclosure calculator</p>
+        <p class="section-hint" id="buildId" style="margin-top:0.35rem;">-</p>
       </header>
 
       <nav class="tab-nav card" aria-label="Workspace views">
@@ -40,6 +41,15 @@
           <input id="useMaxConstraints" type="checkbox" checked />
           <span>Use trunk constraints</span>
         </label>
+        <div class="field-grid" style="margin-top:0.6rem;">
+          <label class="field">
+            <span>Suggestion Mode</span>
+            <select id="suggestionMode">
+              <option value="target" selected>Meet target volume</option>
+              <option value="maximize">Maximize volume within constraints</option>
+            </select>
+          </label>
+        </div>
         <div class="field-grid dimension-grid trunk-grid">
           <label class="field">
             <span>Max Width (in)</span>
@@ -115,7 +125,33 @@
           </div>
         </div>
 
-        <details class="advanced-panel" style="margin-top: 1rem;">
+        <div id="parsedPreview" style="margin-top:0.8rem; border-radius:8px; padding:0.6rem; background:rgba(255,255,255,0.02);">
+          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+            <label class="field" style="flex:1 1 180px;">
+              <span>Parsed Sealed Volume (ft³)</span>
+              <input id="parsedSealedVolume" type="number" step="0.01" />
+            </label>
+            <label class="field" style="flex:1 1 180px;">
+              <span>Parsed Vented Volume (ft³)</span>
+              <input id="parsedVentedVolume" type="number" step="0.01" />
+            </label>
+            <label class="field" style="flex:1 1 140px;">
+              <span>Sealed F3 (Hz)</span>
+              <input id="parsedSealedF3" type="number" step="1" />
+            </label>
+            <label class="field" style="flex:1 1 140px;">
+              <span>Vented F3 (Hz)</span>
+              <input id="parsedVentedF3" type="number" step="1" />
+            </label>
+          </div>
+          <p class="section-hint" style="margin-top:0.4rem;">You can adjust these values manually — edited fields are highlighted. Click <strong>Apply Preview</strong> to use the previewed values. Clicking <strong>Parse & Apply</strong> will re-parse the paste and reset these preview values to the pasted data.</p>
+          <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
+            <button id="applyParsedBtn" type="button" class="action-btn">Apply Preview</button>
+            <button id="resetParsedBtn" type="button" class="ghost-btn">Reset Preview</button>
+          </div>
+        </div>
+
+        <details class="advanced-panel" style="margin-top: 1rem;" open>
           <summary>Enclosure Type & Tuning</summary>
           <div class="field-grid">
             <label class="field">
@@ -130,6 +166,49 @@
               <input id="tuningFrequency" type="number" min="15" max="100" step="1" value="40" />
             </label>
           </div>
+          <div class="field-grid" style="margin-top:0.8rem;">
+            <label class="field">
+              <span>Auto Dimension Priority 1</span>
+              <select id="autoPriority1">
+                <option value="height" selected>Height</option>
+                <option value="width">Width</option>
+                <option value="depth">Depth</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Auto Dimension Priority 2</span>
+              <select id="autoPriority2">
+                <option value="height">Height</option>
+                <option value="width" selected>Width</option>
+                <option value="depth">Depth</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Auto Dimension Priority 3</span>
+              <select id="autoPriority3">
+                <option value="height">Height</option>
+                <option value="width">Width</option>
+                <option value="depth" selected>Depth</option>
+              </select>
+            </label>
+          </div>
+          <div class="field-grid" style="margin-top:0.6rem;">
+            <label class="field">
+              <span>Width Weight (%)</span>
+              <input id="autoWeightWidth" type="number" min="0" max="100" step="1" value="33" />
+            </label>
+            <label class="field">
+              <span>Height Weight (%)</span>
+              <input id="autoWeightHeight" type="number" min="0" max="100" step="1" value="34" />
+            </label>
+            <label class="field">
+              <span>Depth Weight (%)</span>
+              <input id="autoWeightDepth" type="number" min="0" max="100" step="1" value="33" />
+            </label>
+          </div>
+          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+            Auto dimensioning uses the priority order first, then weights to bias the base shape before fitting target volume within constraints.
+          </p>
           <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
             Tuning frequency affects port design. Sealed enclosures don't require tuning calculation.
           </p>
@@ -144,6 +223,26 @@
           role="img"
           aria-label="Speaker enclosure diagram"
         ></svg>
+        <div class="diagram-controls" aria-label="Quick dimension adjustments">
+          <div class="diagram-controls-row">
+            <label class="field compact">
+              <span>W (in)</span>
+              <input id="quickWidth" type="number" min="0" step="0.01" />
+            </label>
+            <label class="field compact">
+              <span>H (in)</span>
+              <input id="quickHeight" type="number" min="0" step="0.01" />
+            </label>
+            <label class="field compact">
+              <span>D (in)</span>
+              <input id="quickDepth" type="number" min="0" step="0.01" />
+            </label>
+          </div>
+          <div class="diagram-controls-meta">
+            <span class="section-hint">Quick adjust uses your current dimension mode (internal/external).</span>
+            <span class="diagram-volume" id="quickVolume">-</span>
+          </div>
+        </div>
       </section>
 
       
@@ -210,9 +309,61 @@
             <input type="radio" name="dimensionMode" value="internal" />
             <span>Internal</span>
           </label>
+        </div>
+      </section>
+
       <section class="card tab-panel" data-panel="design">
         <h2>Quick Volume Sizing</h2>
         <p class="section-hint">Get suggested box dimensions for a target volume.</p>
+        <div class="field-grid" style="margin-top:0.4rem;">
+          <label class="field">
+            <span>Suggestion Mode</span>
+            <select id="quickSuggestionMode">
+              <option value="target" selected>Meet target volume</option>
+              <option value="maximize">Maximize volume within constraints</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-grid" style="margin-top:0.6rem;">
+          <label class="field">
+            <span>Auto Dimension Priority 1</span>
+            <select id="quickAutoPriority1">
+              <option value="height" selected>Height</option>
+              <option value="width">Width</option>
+              <option value="depth">Depth</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Auto Dimension Priority 2</span>
+            <select id="quickAutoPriority2">
+              <option value="height">Height</option>
+              <option value="width" selected>Width</option>
+              <option value="depth">Depth</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Auto Dimension Priority 3</span>
+            <select id="quickAutoPriority3">
+              <option value="height">Height</option>
+              <option value="width">Width</option>
+              <option value="depth" selected>Depth</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-grid" style="margin-top:0.6rem;">
+          <label class="field">
+            <span>Width Weight (%)</span>
+            <input id="quickAutoWeightWidth" type="number" min="0" max="100" step="1" value="33" />
+          </label>
+          <label class="field">
+            <span>Height Weight (%)</span>
+            <input id="quickAutoWeightHeight" type="number" min="0" max="100" step="1" value="34" />
+          </label>
+          <label class="field">
+            <span>Depth Weight (%)</span>
+            <input id="quickAutoWeightDepth" type="number" min="0" max="100" step="1" value="33" />
+          </label>
+        </div>
         <div class="field-grid single-row">
           <label class="field">
             <span>Desired Net Volume (ft³)</span>
@@ -236,10 +387,10 @@
           </button>
         </div>
       </section>
+
+      <section class="card tab-panel" data-panel="build">
         <h2>Cut Sheet</h2>
-        <p class="build-note">
-          Build view keeps construction details separate from sizing workflow.
-        </p>
+        <p class="build-note">Build view keeps construction details separate from sizing workflow.</p>
         <div id="cutSheet" class="cut-sheet"></div>
       </section>
     </main>
