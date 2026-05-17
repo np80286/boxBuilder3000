@@ -136,6 +136,16 @@
         ></svg>
       </section>
 
+      <section class="card tab-panel" data-panel="design">
+        <h2>Driver Recommended Volumes (paste)</h2>
+        <p class="section-hint">Copy the spec block from Parts Express or vendor and paste here. Click "Parse & Apply" to use recommended sealed/ported volumes.</p>
+        <textarea id="partsSpecPaste" rows="4" style="width:100%; padding:0.6rem; border-radius:8px; background:var(--panel); color:var(--text);"></textarea>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <button id="parsePartsBtn" type="button" class="action-btn">Parse & Apply</button>
+          <button id="clearPartsBtn" type="button" class="ghost-btn">Clear</button>
+        </div>
+      </section>
+
       <section class="card outputs sticky-results tab-panel" data-panel="design">
         <h2>Calculated Output</h2>
         <div class="output-grid">

@@ -44,6 +44,9 @@ const inputs = {
   voiceCoilDiameter: document.getElementById('voiceCoilDiameter'),
   enclosureType: document.getElementById('enclosureType'),
   tuningFrequency: document.getElementById('tuningFrequency'),
+  partsSpecPaste: document.getElementById('partsSpecPaste'),
+  parsePartsBtn: document.getElementById('parsePartsBtn'),
+  clearPartsBtn: document.getElementById('clearPartsBtn'),
   targetNetVolume: document.getElementById('targetNetVolume'),
   useMaxConstraints: document.getElementById('useMaxConstraints'),
   maxBoxWidth: document.getElementById('maxBoxWidth'),
@@ -208,6 +211,43 @@ function getSuggestedInternalDimensions(currentState, internalDimensions) {
     height: internalDimensions.height * scale,
     depth: internalDimensions.depth * scale
   };
+}
+
+// Parse plaintext specs copied from vendor pages like Parts Express.
+// Expected patterns (examples):
+// Sealed Volume	2.1ft³
+// Sealed F3	42Hz
+// Vented Volume	6ft³
+// Vented F3	23Hz
+function parsePartsSpec(text) {
+  if (!text || typeof text !== 'string') return null;
+  const out = {};
+
+  // Match volumes like 'Sealed Volume\t2.1ft³' or 'Sealed Volume: 2.1 ft^3' etc.
+  const sealedVol = text.match(/sealed\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const ventedVol = text.match(/vented|ported\s+volume[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const sealedF3 = text.match(/sealed\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+  const ventedF3 = text.match(/vented|ported\s+f3[^0-9\n]*([0-9]+(?:\.[0-9]+)?)/i);
+
+  if (sealedVol) out.sealedVolume = parseFloat(sealedVol[1]);
+  if (ventedVol) out.ventedVolume = parseFloat(ventedVol[1]);
+  if (sealedF3) out.sealedF3 = Math.round(parseFloat(sealedF3[1]));
+  if (ventedF3) out.ventedF3 = Math.round(parseFloat(ventedF3[1]));
+
+  // Try fallback patterns: lines with 'Sealed' or 'Vented' + number + 'ft' or 'Hz'
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (const l of lines) {
+    const m1 = l.match(/sealed[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
+    if (m1 && !out.sealedVolume) out.sealedVolume = parseFloat(m1[1]);
+    const m2 = l.match(/vented|ported[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*ft/i);
+    if (m2 && !out.ventedVolume) out.ventedVolume = parseFloat(m2[1]);
+    const m3 = l.match(/sealed[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+    if (m3 && !out.sealedF3) out.sealedF3 = Math.round(parseFloat(m3[1]));
+    const m4 = l.match(/vented|ported[^0-9]*f3[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
+    if (m4 && !out.ventedF3) out.ventedF3 = Math.round(parseFloat(m4[1]));
+  }
+
+  return Object.keys(out).length ? out : null;
 }
 
 function getConstraintData(currentState, externalDimensions) {
@@ -633,6 +673,43 @@ function bindEvents() {
       renderUI();
     });
   });
+
+  // Parts Express spec parsing
+  if (inputs.parsePartsBtn) {
+    inputs.parsePartsBtn.addEventListener('click', () => {
+      const text = inputs.partsSpecPaste.value || '';
+      const parsed = parsePartsSpec(text);
+      if (parsed) {
+        // Prefer sealed values if present and enclosure set to sealed, otherwise use ported
+        if (parsed.sealedVolume && state.enclosureType === 'sealed') {
+          state.targetNetVolume = parsed.sealedVolume;
+          inputs.targetNetVolume.value = parsed.sealedVolume.toFixed(2);
+          if (parsed.sealedF3) {
+            state.tuningFrequency = parsed.sealedF3;
+            inputs.tuningFrequency.value = parsed.sealedF3;
+          }
+        }
+        if (parsed.ventedVolume && state.enclosureType === 'ported') {
+          state.targetNetVolume = parsed.ventedVolume;
+          inputs.targetNetVolume.value = parsed.ventedVolume.toFixed(2);
+          if (parsed.ventedF3) {
+            state.tuningFrequency = parsed.ventedF3;
+            inputs.tuningFrequency.value = parsed.ventedF3;
+          }
+        }
+        // If enclosureType not matched, set both as suggestions (choose sealed by default)
+        if (!parsed.sealedVolume && !parsed.ventedVolume) {
+          // nothing
+        }
+        persistState();
+        renderUI();
+      }
+    });
+
+    inputs.clearPartsBtn.addEventListener('click', () => {
+      inputs.partsSpecPaste.value = '';
+    });
+  }
 
   outputs.applySuggestedBtn.addEventListener('click', () => {
     applySuggestedDimensions();
