@@ -713,7 +713,13 @@ function bindEvents() {
       state.targetNetVolume = presetValue;
       inputs.targetNetVolume.value = presetValue.toFixed(2);
       persistState();
+      // After applying preview values, also apply suggested dimensions so the box updates
       renderUI();
+      // small delay to ensure UI updated before applying suggested dims
+      setTimeout(() => {
+        applySuggestedDimensions();
+        renderUI();
+      }, 40);
     });
   });
 
