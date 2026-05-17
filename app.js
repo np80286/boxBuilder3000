@@ -13,6 +13,8 @@ const state = {
   driverDisplacement: 0.08,
   driverSensitivity: 88,
   voiceCoilDiameter: 2.0,
+  enclosureType: 'sealed',
+  tuningFrequency: 40,
   targetNetVolume: 1.25,
   useMaxConstraints: true,
   maxBoxWidth: 38,
@@ -40,6 +42,8 @@ const inputs = {
   driverDisplacement: document.getElementById('driverDisplacement'),
   driverSensitivity: document.getElementById('driverSensitivity'),
   voiceCoilDiameter: document.getElementById('voiceCoilDiameter'),
+  enclosureType: document.getElementById('enclosureType'),
+  tuningFrequency: document.getElementById('tuningFrequency'),
   targetNetVolume: document.getElementById('targetNetVolume'),
   useMaxConstraints: document.getElementById('useMaxConstraints'),
   maxBoxWidth: document.getElementById('maxBoxWidth'),
@@ -175,6 +179,10 @@ function validateBox(currentState, internalDimensions) {
     ) {
       warnings.push('Current box exceeds configured trunk maximum dimensions.');
     }
+  }
+
+  if (currentState.enclosureType === 'sealed' && currentState.tuningFrequency > 0) {
+    warnings.push('ℹ️ Tuning frequency only applies to ported enclosures; sealed doesn\'t require port tuning.');
   }
 
   return warnings;
@@ -581,6 +589,8 @@ function syncInputsFromState() {
   inputs.driverDisplacement.value = state.driverDisplacement;
   inputs.driverSensitivity.value = state.driverSensitivity;
   inputs.voiceCoilDiameter.value = state.voiceCoilDiameter;
+  inputs.enclosureType.value = state.enclosureType;
+  inputs.tuningFrequency.value = state.tuningFrequency;
   inputs.targetNetVolume.value = state.targetNetVolume;
   inputs.useMaxConstraints.checked = state.useMaxConstraints;
   inputs.maxBoxWidth.value = state.maxBoxWidth;

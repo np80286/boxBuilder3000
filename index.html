@@ -104,6 +104,26 @@
             </label>
           </div>
         </details>
+
+        <details class="advanced-panel" style="margin-top: 1rem;">
+          <summary>Enclosure Type & Tuning</summary>
+          <div class="field-grid">
+            <label class="field">
+              <span>Enclosure Type</span>
+              <select id="enclosureType">
+                <option value="sealed">Sealed</option>
+                <option value="ported">Ported</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Target Tuning Frequency (Hz)</span>
+              <input id="tuningFrequency" type="number" min="15" max="100" step="1" value="40" />
+            </label>
+          </div>
+          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+            Tuning frequency affects port design. Sealed enclosures don't require tuning calculation.
+          </p>
+        </details>
       </section>
 
       <section class="card viz-card tab-panel" data-panel="design">
