@@ -1,460 +1,267 @@
-# Box Builder — Codex Build Prompt
+# Box Builder
 
-You are building a **responsive web-based speaker box calculator**.
+Box Builder is a browser-based speaker enclosure designer for planning subwoofer boxes.
 
-Your goal is to create a clean, fast, mobile-first single-page app using **HTML, CSS, and vanilla JavaScript**.
+It helps you enter driver information, choose a sealed or ported enclosure, set available space limits, and see the box update with live volume calculations and diagrams.
 
-Do NOT over-engineer. Do NOT add frameworks unless absolutely necessary.
+The app is intentionally simple to run: it is a static HTML/CSS/JavaScript project. No account, backend, or build step is required.
 
----
+## What It Does
 
-# CORE OBJECTIVE
+- Calculates internal and external box dimensions.
+- Supports sealed and ported enclosure planning.
+- Accounts for wood thickness, driver displacement, port displacement, and bracing displacement.
+- Shows gross and net airspace in cubic feet.
+- Suggests box dimensions from a target volume.
+- Lets you set maximum trunk or hatch space limits.
+- Draws a live box diagram with width, height, and depth labels.
+- Includes Front, Side, and Top designer views.
+- Includes an experimental 3D preview.
+- Generates a basic cut sheet for panel dimensions.
 
-Build a rectangular sealed subwoofer enclosure calculator that:
+## Who This Is For
 
-- accepts box dimensions
-- supports internal/external dimension modes
-- accounts for wood thickness
-- calculates internal volume
-- subtracts driver displacement
-- displays results clearly
-- updates instantly on input change
+Box Builder is for people designing subwoofer enclosures who want a visual helper before cutting wood.
 
----
+You can use it to answer questions like:
 
-# FILE STRUCTURE
+- Will this box fit in my available space?
+- What is the internal air volume?
+- How much volume is left after driver and port displacement?
+- What dimensions get me close to my target net volume?
+- Where does the driver or port sit on the box?
 
-Create the following files:
+This tool is a design aid. Always double-check final dimensions, driver requirements, port tuning, and vehicle fit before building.
 
-- index.html
-- styles.css
-- app.js
+## How To Use It
 
-Keep everything simple and readable.
+### 1. Open The App
 
----
+Open `index.html` in a browser, or serve the folder with a local web server.
 
-# UI REQUIREMENTS
-
-## Layout
-
-- mobile-first
-- centered content
-- max-width container for desktop
-- clean card-based layout
-
-## Sections
-
-### Header
-- title: "Box Builder"
-- subtitle: "Subwoofer enclosure calculator"
-
-### Input Card
-Include inputs for:
-
-- width (number)
-- height (number)
-- depth (number)
-- wood thickness (default 0.75)
-
-### Dimension Mode Toggle
-- radio or toggle:
-  - external
-  - internal
-
-### Driver Section
-
-- dropdown: 8, 10, 12, 15, 18
-- "Advanced" collapsible section with:
-  - driver cutout diameter
-  - mounting depth
-  - driver displacement
-
-### Output Card
-Display:
-
-- internal dimensions
-- external dimensions
-- gross volume (in³ and ft³)
-- net volume before driver
-- net volume after driver
-
-### Validation Area
-Display warnings such as:
-
-- invalid dimensions
-- negative internal size
-- driver doesn't fit
-
-### Visualization
-
-Render a simple **SVG box diagram** that updates live:
-
-- label width, height, depth
-- no real 3D engine
-
----
-
-# DATA MODEL
-
-Use a single state object:
-
-```js
-const state = {
-  dimensionMode: 'external',
-  width: 0,
-  height: 0,
-  depth: 0,
-  woodThickness: 0.75,
-  driverSize: 12,
-  driverCutout: 11.1,
-  mountingDepth: 6.5,
-  driverDisplacement: 0.08
-};
-```
-
----
-
-# DRIVER DEFAULTS
-
-When driver size changes, auto-fill defaults:
-
-```js
-const DRIVER_DEFAULTS = {
-  8:  { cutout: 7.25, depth: 4.5, displacement: 0.03 },
-  10: { cutout: 9.25, depth: 5.5, displacement: 0.05 },
-  12: { cutout: 11.1, depth: 6.5, displacement: 0.08 },
-  15: { cutout: 13.8, depth: 7.5, displacement: 0.14 },
-  18: { cutout: 16.6, depth: 9.0, displacement: 0.22 }
-};
-```
-
----
-
-# CALCULATION RULES
-
-## Internal Dimensions (from external)
-
-internal = external - (2 × wood thickness)
-
-## External Dimensions (from internal)
-
-external = internal + (2 × wood thickness)
-
-## Volume
-
-- cubic inches = w × h × d
-- cubic feet = cubic inches / 1728
-
-## Net Volume
-
-net = gross ft³ - driver displacement
-
----
-
-# VALIDATION RULES
-
-Show warnings if:
-
-- any internal dimension <= 0
-- mounting depth > internal depth
-- cutout > internal width OR height
-
-Do not crash on invalid input.
-
----
-
-# FUNCTIONAL REQUIREMENTS
-
-## JavaScript
-
-- keep logic separate from DOM
-- use pure helper functions for math
-- update UI on every input change
-
-## Required Functions
-
-- getInternalDimensions()
-- getExternalDimensions()
-- getVolume()
-- getNetVolume()
-- validateBox()
-- renderUI()
-- renderSVG()
-
----
-
-# STYLING
-
-Aim for a UI that feels:
-
-- techy
-- modern
-- polished
-- slightly futuristic / space-age
-- visually impressive without being cluttered
-
-## Visual Direction
-
-Use a look inspired by:
-
-- dark dashboard interfaces
-- neon-accented control panels
-- subtle sci-fi / HUD-style design
-- clean product UI, not gamer-chaos
-
-## Design Inspiration Reference
-
-Think:
-
-- Tesla UI
-- professional audio DSP software interfaces
-- modern SaaS dashboards
-
-In short:
-
-"Think Tesla UI meets audio DSP software meets modern SaaS dashboard"
-
-The app should feel like a premium box-design tool, not a plain form.
-
-## Styling Requirements
-
-- dark theme by default
-- strong contrast
-- rounded cards
-- subtle glass / panel feel where appropriate
-- soft glow accents used sparingly
-- modern typography
-- clear visual hierarchy
-- generous spacing
-- readable on mobile
-- smooth hover/focus states
-- polished input styling
-- outputs should feel important and “instrument-like”
-
-## Preferred Color Approach
-
-Use a dark base with 1–2 bright accent colors such as:
-
-- electric blue
-- cyan
-- violet
-- subtle teal
-
-Avoid rainbow overload or cheesy “gaming” aesthetics.
-
-## Specific UI Suggestions
-
-- cards should feel like control modules
-- result values should be bold and prominent
-- labels should be clean and slightly muted
-- toggles should feel modern
-- the SVG visualization should look integrated into the design, not like a raw developer placeholder
-- validation/warning states should still look polished
-
-## Important
-
-Make it look cool.
-
-Do not make it tacky.
-
-Favor tasteful futuristic UI over gimmicks.
-
----
-
-# NON-GOALS
-
-Do NOT implement:
-
-- ported box math
-- sloped boxes
-- multiple drivers
-- advanced acoustics
-- saving/loading
-
----
-
-# OUTPUT EXPECTATION
-
-When complete, the app should:
-
-- instantly update calculations as user types
-- clearly show all values
-- handle bad input gracefully
-- visually represent the box
-
----
-
-# IMPORTANT
-
-Prioritize:
-
-1. correctness of math
-2. simplicity of architecture
-3. responsiveness
-4. polished visual design
-
-Avoid:
-
-- over-abstracting
-- unnecessary dependencies
-
----
-
-# SHARING WITH CLOUDFLARE TUNNEL
-
-To share Box Builder with others (test on phone, share with teammates, etc.):
-
-## 1. Start the local web server
+Example local server:
 
 ```bash
-cd /Users/np303/dev/boxBuilder
-python3 -m http.server 8080
+python3 -m http.server 5500
 ```
 
-This serves the app on `localhost:8080`.
+Then open:
 
-## 2. In a new terminal, create a Cloudflare tunnel
+```text
+http://127.0.0.1:5500/
+```
+
+You can also open the file directly:
+
+```text
+file:///path/to/boxBuilder/index.html
+```
+
+Using a local server is recommended for the experimental 3D preview.
+
+### 2. Set Your Maximum Space
+
+Use **Maximum Trunk / Hatch Area** to enter the largest box that can physically fit.
+
+Typical values:
+
+- Width: left-to-right available space.
+- Height: floor-to-top available space.
+- Depth: front-to-back available space.
+
+If **Use max space constraints** is enabled, suggestions and fit warnings will respect these limits.
+
+### 3. Choose Your Driver
+
+Use **Driver Selection** to enter:
+
+- Driver size.
+- Driver displacement.
+- Driver depth.
+- Driver quantity.
+- Cutout diameter.
+- Mounting depth.
+
+The cutout is the speaker hole size. The designer should not resize the speaker cutout when you resize the box.
+
+### 4. Choose Sealed Or Ported
+
+Use **Enclosure Type** to choose:
+
+- **Sealed** for a closed box.
+- **Ported** for a box with a slot or round port.
+
+For ported boxes, you can set:
+
+- Port type: slot or round.
+- Port size.
+- Port length.
+- Port count.
+- Tuning frequency.
+- Port face and offset.
+- Internal/external port extension.
+
+Some port tools are still experimental, especially folded slot routing and 3D interaction.
+
+### 5. Enter Box Dimensions
+
+Use **Manual Box Calculator** to enter the box size.
+
+You can choose:
+
+- Rectangular cabinet.
+- Wedge / slanted cabinet.
+- External dimensions.
+- Internal dimensions.
+
+Wood thickness is used to convert between internal and external dimensions.
+
+### 6. Use Target Volume Suggestions
+
+Use **Quick Volume Sizing** to enter a target net volume.
+
+The app can suggest dimensions based on:
+
+- Target net airspace.
+- Maximum available space.
+- Dimension priority.
+- Width/height/depth weighting.
+
+Click **Apply Suggested Dimensions** when you want to use the suggested size.
+
+### 7. Read The Output
+
+The **Calculated Output** section shows:
+
+- Internal dimensions.
+- External dimensions.
+- Gross volume.
+- Net volume before driver.
+- Net volume after driver, ports, and bracing.
+
+The **Status** section shows warnings and notes.
+
+## Diagrams And Designer Views
+
+### Live Box Diagram
+
+The live diagram gives a visual overview of the enclosure.
+
+When Designer Mode is enabled, drag handles can adjust:
+
+- Box width.
+- Box height.
+- Box depth.
+- Port position.
+- Port length.
+
+The driver cutout is intended to remain fixed-size unless you edit the driver/cutout input directly.
+
+### Front, Side, And Top Views
+
+The designer views show orthographic views of the box:
+
+- **Front**: width and height.
+- **Side**: depth and height.
+- **Top**: width and depth.
+
+These views are useful for understanding where the box, driver, and port sit in space.
+
+### Experimental 3D Preview
+
+The 3D preview is experimental.
+
+It can show:
+
+- Box shape.
+- Max available space.
+- Driver location.
+- Port pieces.
+- Interior/cutaway view.
+
+For editing in 3D:
+
+1. Enable **Lock 3D Zoom**.
+2. Enable **Lock 3D View**.
+3. Enable **Enable 3D Editing**.
+4. Drag the visible W/H/D labels or handles.
+
+If 3D editing does not respond, check the **3D debug** line. It reports whether pointer events and drag actions are being detected.
+
+## Cut Sheet
+
+The **Cut Sheet** section lists basic panel sizes for the current box.
+
+Use this as a starting point only. Real-world building may require adjustments for:
+
+- Assembly method.
+- Kerf.
+- Double baffles.
+- Bracing.
+- Rabbets, dados, or overlaps.
+- Carpet, vinyl, or finish thickness.
+
+## Important Notes
+
+- Measurements are currently inch-based.
+- Port calculations are a planning aid and should be checked before building.
+- 3D editing is still experimental.
+- The app stores settings in browser local storage.
+- If the app acts strange after an update, reload with the current version query string or clear local storage.
+
+## Project Files
+
+- `index.html`: app layout and controls.
+- `styles.css`: visual styling.
+- `app.js`: UI behavior, rendering, and interactive designer logic.
+- `boxMath.js`: reusable math helpers.
+- `test.js`: Node-based math tests.
+- `ChatBridge.md`: working handoff notes and current TODOs.
+- `upgrades.md`: larger roadmap and future planning notes.
+
+## Running Tests
+
+Run the math tests with:
 
 ```bash
-cloudflared tunnel --url localhost:8080
-```
-
-This generates a temporary public URL like:
-```
-https://climb-median-recovered-helpful.trycloudflare.com
-```
-
-## 3. Share the URL
-
-Send the public URL to anyone you want to share with. They can visit it on any device (phone, tablet, etc.) from anywhere with internet.
-
-## 4. Keep both terminals running
-
-- Terminal 1: Python HTTP server (stays running)
-- Terminal 2: Cloudflare tunnel (stays running)
-
-Changes to files are reflected immediately when visitors refresh.
-
-## Notes
-
-- This uses Cloudflare's free quick tunnel (no account needed)
-- The URL is temporary and changes each time you restart the tunnel
-- For a permanent setup, create a named tunnel: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
-
----
-
-# TESTING
-
-## Run Math Tests
-
-Test the calculation functions against known values from the screenshot (4.0 ft³ box):
-
-```bash
-cd /Users/np303/dev/boxBuilder
 node test.js
 ```
 
-Or in browser console (after loading `app.js` then `test.js`):
-
-```javascript
-runAllTests()
-```
-
-Tests verify:
-- Volume conversions (in³ to ft³)
-- Internal/external dimension calculations
-- Net volume after driver displacement
-- Known values from the design
-- complicated architecture
-
-## UI Quality Bar
-
-The interface should feel intentionally designed.
-
-Not just “functional.”
-
-Codex should spend real effort on:
-
-- layout polish
-- spacing consistency
-- attractive color usage
-- modern controls
-- a visually cohesive card system
-- making the calculator feel like a real product
-
----
-
-# NEXT STEP
-
-Build the full working app.
-
-Do not ask questions. Make reasonable assumptions where needed.
-
----
-
-# PROJECT STATUS (March 29, 2026)
-
-Current version is implemented with:
-
-- `index.html`
-- `styles.css`
-- `app.js`
-
-Includes:
-
-- external/internal dimension mode
-- wood thickness handling
-- gross and net volume calculations
-- driver defaults and advanced controls
-- live validation warnings
-- live SVG visualization
-- target-volume helper with quick presets
-- suggested dimension apply flow
-- cut-sheet output (panel list with dimensions/qty)
-- localStorage persistence for last-used settings
-- trunk/vehicle max-dimension constraints for fit checks
-- max constrained net-volume estimate
-- compact desktop input sizing for numeric fields
-- SVG scaling and label bounds handling
-
-Trunk baseline defaults (current test vehicle):
-
-- max height: `16 in`
-- max width: `38 in`
-- max depth: `22 in`
-
----
-
-# LOCAL RUN
-
-From the project directory:
+Check JavaScript syntax with:
 
 ```bash
-python3 -m http.server 8080
+node --check app.js
 ```
 
-Then open: <http://localhost:8080>
+## Current Development Status
 
-Stop server: `Ctrl + C`
+Box Builder is actively evolving from a calculator into an interactive enclosure designer.
 
----
+Stable areas:
 
-# CHAT CONTINUITY WORKFLOW
+- Basic dimension math.
+- Volume calculations.
+- Target volume suggestions.
+- Live 2D diagram.
+- Cut sheet output.
 
-Use `ChatBridge.md` as the shared handoff log between Codex and ChatGPT conversations.
+In-progress areas:
 
-When making changes, update `ChatBridge.md` with:
+- Wedge cabinet support.
+- Ported enclosure routing.
+- Folded slot port visualization.
+- 3D editing.
+- Automated browser testing.
 
-1. what changed
-2. files touched
-3. current known issues
-4. next suggested steps
+## Disclaimer
 
----
+This software helps with planning speaker enclosures, but it does not replace careful design review.
 
-# KNOWN LIMITATIONS
+Before cutting material, verify:
 
-- No automated test suite yet.
-- Static app only (no backend/build step required).
-- Box math is for sealed rectangular enclosures only.
+- Driver manufacturer recommendations.
+- Net volume target.
+- Port area and port length.
+- Mounting depth and cutout diameter.
+- Vehicle or room fit.
+- Material thickness and construction method.
