@@ -112,6 +112,10 @@ h2 {
   gap: 0.35rem;
 }
 
+.field[hidden] {
+  display: none !important;
+}
+
 .field span,
 .metric .label {
   color: var(--muted);
@@ -198,6 +202,28 @@ select:focus {
   height: 1rem;
 }
 
+.check-row.is-disabled {
+  opacity: 0.52;
+}
+
+#threePreview,
+#threePreview canvas {
+  touch-action: none;
+  user-select: none;
+}
+
+.three-debug {
+  margin: 0.35rem 0 0;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(126, 223, 255, 0.24);
+  border-radius: 10px;
+  background: rgba(3, 8, 17, 0.62);
+  color: #9fd6ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 .trunk-grid {
   margin-top: 0.25rem;
 }
@@ -251,6 +277,34 @@ select:focus {
   margin-top: 0.8rem;
   display: grid;
   gap: 0.65rem;
+}
+
+.designer-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.designer-panel {
+  border: 1px solid rgba(103, 145, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(8, 16, 31, 0.68);
+  padding: 0.75rem;
+}
+
+.designer-panel h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+  color: #dbe7ff;
+}
+
+.designer-panel svg {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 12px;
+  border: 1px solid rgba(138, 180, 255, 0.16);
+  background:
+    radial-gradient(circle at 50% 8%, rgba(52, 114, 214, 0.14), transparent 48%),
+    rgba(3, 8, 17, 0.84);
 }
 
 .diagram-controls {
@@ -496,6 +550,12 @@ input.is-too-shallow {
   }
 }
 
+@media (min-width: 720px) {
+  .designer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .cut-sheet table {
   width: 100%;
   border-collapse: collapse;
@@ -539,6 +599,14 @@ input.is-too-shallow {
   background:
     radial-gradient(circle at 30% 20%, rgba(52, 117, 255, 0.18), transparent 50%),
     rgba(4, 10, 20, 0.88);
+}
+
+.diagram-handle {
+  cursor: grab;
+}
+
+.diagram-handle:active {
+  cursor: grabbing;
 }
 
 @media (min-width: 720px) {

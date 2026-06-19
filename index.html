@@ -3,14 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Box Builder</title>
+    <script>
+      window.BOX_BUILDER_ASSET_VERSION = '2026-06-17-01';
+      (function ensureVersionedUrl() {
+        try {
+          var expected = window.BOX_BUILDER_ASSET_VERSION;
+          var url = new URL(window.location.href);
+          if (url.searchParams.get('v') === expected) return;
+          url.searchParams.set('v', expected);
+          window.location.replace(url.toString());
+        } catch (_) {
+          // ignore
+        }
+      }());
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2026-06-17-01" />
   </head>
   <body>
     <main class="app-shell">
@@ -90,6 +107,10 @@
             <span>Driver Depth (in)</span>
             <input id="driverDepth" type="number" min="0" step="0.1" value="6.5" />
           </label>
+          <label class="field">
+            <span>Driver Quantity</span>
+            <input id="driverCount" type="number" min="1" step="1" value="1" />
+          </label>
         </div>
 
         <div class="field-grid" style="margin-top:0.6rem;">
@@ -165,7 +186,99 @@
               <span>Target Tuning Frequency (Hz)</span>
               <input id="tuningFrequency" type="number" min="15" max="100" step="1" value="40" />
             </label>
+            <label class="field">
+              <span>Bracing Displacement (ft³)</span>
+              <input id="bracingDisplacement" type="number" min="0" step="0.01" value="0" />
+            </label>
           </div>
+          <div class="field-grid" style="margin-top:0.8rem;">
+            <label class="field">
+              <span>Port Type</span>
+              <select id="portType">
+                <option value="slot" selected>Slot Port</option>
+                <option value="round">Round Port</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Slot Port Width (in)</span>
+              <input id="slotPortWidth" type="number" min="0" step="0.01" value="12" />
+            </label>
+            <label class="field">
+              <span>Slot Port Height (in)</span>
+              <input id="slotPortHeight" type="number" min="0" step="0.01" value="1.5" />
+            </label>
+            <label class="field">
+              <span>Slot Port Length (in)</span>
+              <input id="slotPortLength" type="number" min="0" step="0.01" value="18" />
+            </label>
+            <label class="field">
+              <span>Slot Port Count</span>
+              <input id="slotPortCount" type="number" min="1" step="1" value="1" />
+            </label>
+            <label class="field">
+              <span>Round Port Diameter (in)</span>
+              <input id="roundPortDiameter" type="number" min="0" step="0.01" value="4" />
+            </label>
+            <label class="field">
+              <span>Round Port Length (in)</span>
+              <input id="roundPortLength" type="number" min="0" step="0.01" value="12" />
+            </label>
+            <label class="field">
+              <span>Round Port Quantity</span>
+              <input id="roundPortQuantity" type="number" min="1" step="1" value="1" />
+            </label>
+          </div>
+          <div class="field-grid" style="margin-top:0.8rem;">
+            <label class="field">
+              <span>Auto Port Mode</span>
+              <select id="autoPortMode">
+                <option value="manual">Manual</option>
+                <option value="length">Auto Length</option>
+                <option value="full" selected>Full Auto</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Auto Port Area (in² / ft³)</span>
+              <input id="autoPortAreaPerFt3" type="number" min="0.01" step="0.01" value="16" />
+            </label>
+            <label class="field">
+              <span>Min Round Port Diameter (in)</span>
+              <input id="autoPortMinRoundDiameter" type="number" min="0.01" step="0.01" value="4" />
+            </label>
+            <label class="field">
+              <span>Slot Aspect Ratio (W:H)</span>
+              <input id="autoPortSlotAspectRatio" type="number" min="0.01" step="0.01" value="8" />
+            </label>
+            <label class="field">
+              <span>Min Slot Height (in)</span>
+              <input id="autoPortMinSlotHeight" type="number" min="0.01" step="0.01" value="1.5" />
+            </label>
+            <label class="field">
+              <span>Min Port Length (in)</span>
+              <input id="autoPortMinLength" type="number" min="0.01" step="0.01" value="0.5" />
+            </label>
+          </div>
+          <div class="field-grid" style="margin-top:0.6rem;">
+            <label class="field">
+              <span>Speed Of Sound (in/s)</span>
+              <input id="portTuningSpeedOfSound" type="number" min="0.01" step="0.1" value="13503.9" />
+            </label>
+            <label class="field">
+              <span>Inside End Correction</span>
+              <input id="portTuningInsideEndCorrection" type="number" min="0" step="0.01" value="0.85" />
+            </label>
+            <label class="field">
+              <span>Outside End Correction</span>
+              <input id="portTuningOutsideEndCorrection" type="number" min="0" step="0.01" value="0.85" />
+            </label>
+            <label class="field">
+              <span>Length Adjustment (in)</span>
+              <input id="portTuningLengthAdjustment" type="number" step="0.01" value="0" />
+            </label>
+          </div>
+          <p class="section-hint" id="autoPortSummary" style="font-size: 0.85rem; margin-top: 0.5rem;">
+            Manual port sizing is active.
+          </p>
           <div class="field-grid" style="margin-top:0.8rem;">
             <label class="field">
               <span>Auto Dimension Priority 1</span>
@@ -212,6 +325,100 @@
           <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
             Tuning frequency affects port design. Sealed enclosures don't require tuning calculation.
           </p>
+          <div class="field-grid" style="margin-top:0.8rem;">
+            <label class="field">
+              <span>Port Mount Face</span>
+              <select id="portMountFace">
+                <option value="front" selected>Front</option>
+                <option value="rear">Rear</option>
+                <option value="left">Left Side</option>
+                <option value="right">Right Side</option>
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Multi-Port Layout</span>
+              <select id="portLayout">
+                <option value="horizontal" selected>Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Port Spacing (in)</span>
+              <input id="portSpacing" type="number" step="0.01" value="0" />
+            </label>
+            <label class="field">
+              <span>Port Extension Mode</span>
+              <select id="portExtensionMode">
+                <option value="internal" selected>Inside Box</option>
+                <option value="split">Split In / Out</option>
+                <option value="external">Outside Box</option>
+              </select>
+            </label>
+          </div>
+          <div class="field-grid" style="margin-top:0.6rem;">
+            <label class="field">
+              <span>Port Offset X (in)</span>
+              <input id="portOffsetX" type="number" step="0.01" value="0" />
+            </label>
+            <label class="field">
+              <span>Port Offset Y (in)</span>
+              <input id="portOffsetY" type="number" step="0.01" value="0" />
+            </label>
+            <label class="field">
+              <span>Port Offset Z (in)</span>
+              <input id="portOffsetZ" type="number" step="0.01" value="0" />
+            </label>
+          </div>
+          <div class="field-grid" style="margin-top:0.6rem;">
+            <label class="field">
+              <span>Slot Port Internal Channels</span>
+              <input id="slotPortChannelCount" type="number" min="1" step="1" value="1" />
+            </label>
+            <label class="field">
+              <span>Slot Channel Gap (in)</span>
+              <input id="slotPortChannelGap" type="number" min="0" step="0.01" value="0.75" />
+            </label>
+            <label class="field">
+              <span>Slot Fold Axis</span>
+              <select id="slotPortFoldAxis">
+                <option value="auto" selected>Auto</option>
+                <option value="width">Width Axis</option>
+                <option value="height">Height Axis</option>
+                <option value="depth">Depth Axis</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Slot Fold Direction</span>
+              <select id="slotPortFoldDirection">
+                <option value="auto" selected>Auto</option>
+                <option value="positive">Positive Axis</option>
+                <option value="negative">Negative Axis</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Slot Lead Run Offset (in)</span>
+              <input id="slotPortLeadRunOffset" type="number" step="0.01" value="0" />
+            </label>
+          </div>
+          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+            Offsets are measured from the enclosure center. The selected face uses the two relevant axes and ignores depth-normal offset.
+          </p>
+          <div class="field-grid" style="margin-top:0.8rem;">
+            <label class="field">
+              <span>3D Shell Opacity</span>
+              <input id="threeShellOpacity" type="range" min="0.05" max="1" step="0.01" value="0.24" />
+            </label>
+            <label class="field">
+              <span>3D Port Opacity</span>
+              <input id="threePortOpacity" type="range" min="0.05" max="1" step="0.01" value="0.82" />
+            </label>
+            <label class="field">
+              <span>Port Wall Thickness (in)</span>
+              <input id="threePortWallThickness" type="number" min="0.01" step="0.01" value="0.25" />
+            </label>
+          </div>
         </details>
       </section>
 
@@ -241,6 +448,97 @@
           <div class="diagram-controls-meta">
             <span class="section-hint">Quick adjust uses your current dimension mode (internal/external).</span>
             <span class="diagram-volume" id="quickVolume">-</span>
+          </div>
+          <label class="check-row" style="margin-top:0.7rem;">
+            <input id="designerMode" type="checkbox" />
+            <span>Designer Mode (drag box handles in diagram)</span>
+          </label>
+          <div class="field-grid" style="margin-top:0.7rem;">
+            <label class="field compact">
+              <span>Designer Snap (in)</span>
+              <input id="designerSnapIncrement" type="number" min="0.01" step="0.01" value="0.25" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card viz-card tab-panel" data-panel="design">
+        <h2>Experimental 3D Preview</h2>
+        <div id="threePreview" style="width:100%; height:280px; border-radius:12px; border:1px solid rgba(138,180,255,0.24); background:rgba(3,8,17,0.8);"></div>
+        <div class="field-grid" style="margin-top:0.6rem;">
+          <label class="field">
+            <span>Depth Direction</span>
+            <select id="threeDepthDirection">
+              <option value="front_to_back" selected>Front seat → Rear hatch</option>
+              <option value="back_to_front">Rear hatch → Front seat</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Box Position (Depth)</span>
+            <select id="threeBoxAnchor">
+              <option value="rear">Near rear hatch</option>
+              <option value="center">Centered</option>
+              <option value="front" selected>Near front seat (rear-seat side)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Sub Facing</span>
+            <select id="threeSubFacing">
+              <option value="rear" selected>Towards rear hatch</option>
+              <option value="front">Towards front seat</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Driver Layout</span>
+            <select id="threeDriverLayout">
+              <option value="auto" selected>Auto</option>
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+            </select>
+          </label>
+          <label class="check-row" style="align-self:end;">
+            <input id="threeCutaway" type="checkbox" />
+            <span>Show Interior</span>
+          </label>
+          <label class="check-row" style="align-self:end;">
+            <input id="threeLockZoom" type="checkbox" />
+            <span>Lock 3D Zoom</span>
+          </label>
+          <label class="check-row" style="align-self:end;">
+            <input id="threeLockView" type="checkbox" />
+            <span>Lock 3D View</span>
+          </label>
+          <label class="check-row" style="align-self:end;">
+            <input id="threeEditMode" type="checkbox" />
+            <span>Enable 3D Editing</span>
+          </label>
+        </div>
+        <div class="preset-row" style="margin-top:0.6rem;">
+          <button type="button" class="preset-btn" data-three-view="hatch">Hatch View</button>
+          <button type="button" class="preset-btn" data-three-view="front">Front View</button>
+          <button type="button" class="preset-btn" data-three-view="top">Top View</button>
+          <button type="button" class="preset-btn" data-three-view="iso">Iso View</button>
+        </div>
+        <p class="section-hint" id="threeFitInfo" style="margin-top:0.6rem;">3D fit status: -</p>
+        <p class="section-hint" id="threeInteractionHint" style="margin-top:0.35rem;">3D interaction hint: -</p>
+        <p class="three-debug" id="threeDebug">3D debug: waiting for pointer input.</p>
+      </section>
+
+      <section class="card viz-card tab-panel" data-panel="design">
+        <h2>Designer Views</h2>
+        <p class="section-hint">Use these flat views for precise layout work. They stay synchronized with the live diagram and 3D preview, and folded slot channels are shown here as real internal runs.</p>
+        <div class="designer-grid">
+          <div class="designer-panel">
+            <h3>Front</h3>
+            <svg id="designerFrontView" viewBox="0 0 420 240" role="img" aria-label="Front orthographic designer view"></svg>
+          </div>
+          <div class="designer-panel">
+            <h3>Side</h3>
+            <svg id="designerSideView" viewBox="0 0 420 240" role="img" aria-label="Side orthographic designer view"></svg>
+          </div>
+          <div class="designer-panel">
+            <h3>Top</h3>
+            <svg id="designerTopView" viewBox="0 0 420 240" role="img" aria-label="Top orthographic designer view"></svg>
           </div>
         </div>
       </section>
@@ -283,6 +581,13 @@
         <p class="section-hint">Manually enter dimensions to calculate volume, or use the Target Volume Helper above to get suggestions.</p>
         <div class="field-grid dimension-grid">
           <label class="field">
+            <span>Cabinet Shape</span>
+            <select id="cabinetStyle">
+              <option value="rectangular" selected>Rectangular</option>
+              <option value="wedge">Wedge / Slanted</option>
+            </select>
+          </label>
+          <label class="field">
             <span>Width (in)</span>
             <input id="width" type="number" min="0" step="0.01" value="30" />
           </label>
@@ -293,6 +598,14 @@
           <label class="field">
             <span>Depth (in)</span>
             <input id="depth" type="number" min="0" step="0.01" value="14" />
+          </label>
+          <label class="field" id="topDepthField" hidden>
+            <span>Top Depth (in)</span>
+            <input id="topDepth" type="number" min="0" step="0.01" value="12" />
+          </label>
+          <label class="field" id="bottomDepthField" hidden>
+            <span>Bottom Depth (in)</span>
+            <input id="bottomDepth" type="number" min="0" step="0.01" value="16" />
           </label>
           <label class="field">
             <span>Wood Thickness (in)</span>
@@ -395,6 +708,6 @@
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2026-06-17-01"></script>
   </body>
 </html>

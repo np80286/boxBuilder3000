@@ -6,42 +6,52 @@ function safeNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function getInternalDimensions(currentState) {
-  if (currentState.dimensionMode === 'internal') {
-    return {
-      width: currentState.width,
-      height: currentState.height,
-      depth: currentState.depth
-    };
-  }
+function isWedge(currentState) {
+  return currentState.cabinetStyle === 'wedge';
+}
 
-  const subtraction = currentState.woodThickness * 2;
+function getDepthPair(currentState, targetMode) {
+  const wedge = isWedge(currentState);
+  const baseTop = wedge ? safeNumber(currentState.topDepth) : safeNumber(currentState.depth);
+  const baseBottom = wedge ? safeNumber(currentState.bottomDepth) : safeNumber(currentState.depth);
+  const t2 = safeNumber(currentState.woodThickness) * 2;
+  const sourceMode = currentState.dimensionMode === 'internal' ? 'internal' : 'external';
+  const delta = sourceMode === targetMode ? 0 : (targetMode === 'internal' ? -t2 : t2);
+  const topDepth = baseTop + delta;
+  const bottomDepth = baseBottom + delta;
+  const averageDepth = (topDepth + bottomDepth) / 2;
+  return { topDepth, bottomDepth, averageDepth };
+}
+
+function getInternalDimensions(currentState) {
+  const subtraction = currentState.dimensionMode === 'internal' ? 0 : currentState.woodThickness * 2;
+  const depths = getDepthPair(currentState, 'internal');
   return {
     width: currentState.width - subtraction,
     height: currentState.height - subtraction,
-    depth: currentState.depth - subtraction
+    depth: depths.averageDepth,
+    topDepth: depths.topDepth,
+    bottomDepth: depths.bottomDepth
   };
 }
 
 function getExternalDimensions(currentState) {
-  if (currentState.dimensionMode === 'external') {
-    return {
-      width: currentState.width,
-      height: currentState.height,
-      depth: currentState.depth
-    };
-  }
-
-  const addition = currentState.woodThickness * 2;
+  const addition = currentState.dimensionMode === 'external' ? 0 : currentState.woodThickness * 2;
+  const depths = getDepthPair(currentState, 'external');
   return {
     width: currentState.width + addition,
     height: currentState.height + addition,
-    depth: currentState.depth + addition
+    depth: depths.averageDepth,
+    topDepth: depths.topDepth,
+    bottomDepth: depths.bottomDepth
   };
 }
 
 function getVolume(dimensions) {
-  const in3 = dimensions.width * dimensions.height * dimensions.depth;
+  const topDepth = Number.isFinite(dimensions.topDepth) ? dimensions.topDepth : dimensions.depth;
+  const bottomDepth = Number.isFinite(dimensions.bottomDepth) ? dimensions.bottomDepth : dimensions.depth;
+  const averageDepth = (topDepth + bottomDepth) / 2;
+  const in3 = dimensions.width * dimensions.height * averageDepth;
   return {
     in3,
     ft3: in3 / 1728
@@ -373,6 +383,7 @@ function getTargetPrioritySuggestion(currentState, constraintData) {
 
 const api = {
   safeNumber,
+  getDepthPair,
   getInternalDimensions,
   getExternalDimensions,
   getVolume,
