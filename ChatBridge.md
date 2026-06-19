@@ -8,22 +8,27 @@ This file is the shared handoff context between Codex and ChatGPT sessions for t
 - Stack: HTML, CSS, vanilla JavaScript
 
 ## Current State
-- Initial single-page speaker box designer is implemented.
-- Core calculation, validation, and live SVG rendering are active.
-- Target-volume helper/presets are implemented.
-- Cut-sheet output is implemented.
-- localStorage persistence is implemented.
-- Dimension input layout has been compacted for desktop density.
-- Dimension numeric inputs are tuned to compact value-sized desktop widths.
-- SVG diagram scaling is expanded to fill panel space with bounded label placement.
-- Trunk constraint defaults are set for test Scion: H 16 in, W 38 in, D 22 in.
+- Single-page speaker enclosure designer is implemented in static HTML/CSS/vanilla JS.
+- Core calculation, validation, target-volume helper, presets, cut-sheet output, and localStorage persistence are active.
+- Pure math helpers live in `boxMath.js`; Node-based math tests live in `test.js`.
+- Rectangular and wedge cabinet math are in progress, including top/bottom depth handling.
+- Sealed and ported enclosure controls exist, including slot/round ports, bracing displacement, port offsets, port extension modes, and auto port sizing controls.
+- Live box diagram supports designer handles for box W/H/D plus port position/length without resizing the driver cutout.
+- Front/Side/Top designer views are implemented and synchronized with the live diagram.
+- Experimental Three.js preview is implemented with lock zoom, lock view, and 3D edit mode controls.
+- 3D editing is still the active trouble spot; pointer-event fallback was added, but rendered validation in the in-app browser was blocked by `file://` browser automation policy.
+- Trunk/max constraint defaults are set for test Scion: H 16 in, W 38 in, D 22 in.
 
 ## Files in Scope
 - /Users/np303/dev/boxBuilder/index.html
 - /Users/np303/dev/boxBuilder/styles.css
 - /Users/np303/dev/boxBuilder/app.js
+- /Users/np303/dev/boxBuilder/boxMath.js
+- /Users/np303/dev/boxBuilder/test.js
 - /Users/np303/dev/boxBuilder/readme.md
 - /Users/np303/dev/boxBuilder/ChatBridge.md
+- /Users/np303/dev/boxBuilder/upgrades.md
+- /Users/np303/dev/boxBuilder/src/wedge_cabinet.py
 
 ## Change Log
 
@@ -42,14 +47,32 @@ This file is the shared handoff context between Codex and ChatGPT sessions for t
 - Tightened desktop numeric input width further for compact value-focused controls.
 - Increased SVG scale utilization and fixed off-screen dimension label clipping.
 
+### 2026-06-17
+- Added/continued wedge cabinet support in math and UI.
+- Added/continued ported enclosure modeling controls and 2D/3D preview rendering.
+- Added Front/Side/Top designer views with synchronized drag handles.
+- Corrected live diagram design behavior so box W/H/D handles resize the cabinet, while the speaker cutout remains fixed-size.
+- Added 3D lock zoom, lock view, and edit mode controls.
+- Added pointer-event based 3D drag fallback and 3D edit status messaging.
+- Verified `node --check app.js` and `node test.js` pass.
+
 ## Known Issues / Notes
-- No automated tests yet.
 - No build tooling required; static app.
+- Automated math tests exist, but there is no browser/E2E test coverage yet.
+- Browser automation cannot directly validate the current `file://` app because the in-app Browser tool blocks direct `file://` navigation.
+- 3D editing remains unverified by automation and should be manually tested first after each interaction change.
+- Current worktree is dirty with large changes in `app.js`, `boxMath.js`, `index.html`, `styles.css`, and an untracked `src/` folder.
 
 ## Next Steps
-1. Add unit switching (inches/feet/mm) with a global setting.
-2. Add alternate cut-sheet construction styles.
-3. Add print/export for cut sheet and current configuration.
+1. Verify 3D edit mode manually on `file:///Users/np303/dev/boxBuilder/index.html?v=2026-06-12-14`: lock zoom, lock view, enable editing, then confirm W/H/D drag changes the box.
+2. If 3D editing still does not respond, add an on-screen event diagnostic panel showing pointerdown/pointermove target, edit-mode state, selected drag action, and dimension deltas.
+3. Stabilize the 3D UX: reduce visual clutter, make W/H/D handles obvious, and separate camera controls from edit controls cleanly.
+4. Add browser/E2E coverage through a local HTTP dev server or other approved non-`file://` validation route.
+5. Add unit tests for wedge cabinet depth conversion and volume math.
+6. Add unit tests for port displacement, auto port sizing, and port tuning calculations.
+7. Refactor large rendering/event code out of `app.js` once behavior is stable.
+8. Update `readme.md` to reflect the current designer/ported/3D capabilities.
+9. Later backlog: unit switching, alternate cut-sheet construction styles, print/export for cut sheet and current configuration.
 
 ## Handoff Instructions
 - Keep this file updated after each meaningful change.

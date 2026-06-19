@@ -298,6 +298,74 @@ Avoid:
 
 - over-abstracting
 - unnecessary dependencies
+
+---
+
+# SHARING WITH CLOUDFLARE TUNNEL
+
+To share Box Builder with others (test on phone, share with teammates, etc.):
+
+## 1. Start the local web server
+
+```bash
+cd /Users/np303/dev/boxBuilder
+python3 -m http.server 8080
+```
+
+This serves the app on `localhost:8080`.
+
+## 2. In a new terminal, create a Cloudflare tunnel
+
+```bash
+cloudflared tunnel --url localhost:8080
+```
+
+This generates a temporary public URL like:
+```
+https://climb-median-recovered-helpful.trycloudflare.com
+```
+
+## 3. Share the URL
+
+Send the public URL to anyone you want to share with. They can visit it on any device (phone, tablet, etc.) from anywhere with internet.
+
+## 4. Keep both terminals running
+
+- Terminal 1: Python HTTP server (stays running)
+- Terminal 2: Cloudflare tunnel (stays running)
+
+Changes to files are reflected immediately when visitors refresh.
+
+## Notes
+
+- This uses Cloudflare's free quick tunnel (no account needed)
+- The URL is temporary and changes each time you restart the tunnel
+- For a permanent setup, create a named tunnel: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+
+---
+
+# TESTING
+
+## Run Math Tests
+
+Test the calculation functions against known values from the screenshot (4.0 ft³ box):
+
+```bash
+cd /Users/np303/dev/boxBuilder
+node test.js
+```
+
+Or in browser console (after loading `app.js` then `test.js`):
+
+```javascript
+runAllTests()
+```
+
+Tests verify:
+- Volume conversions (in³ to ft³)
+- Internal/external dimension calculations
+- Net volume after driver displacement
+- Known values from the design
 - complicated architecture
 
 ## UI Quality Bar
