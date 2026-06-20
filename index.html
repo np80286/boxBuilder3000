@@ -14,14 +14,28 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css?v=2026-06-20-02" />
+    <meta
+      name="description"
+      content="Design sealed, ported, wedge, and folded-slot subwoofer enclosures with a faster box calculator, fit checks, and cut-sheet workflow."
+    />
   </head>
   <body>
     <main class="app-shell">
       <header class="app-header card">
-        <p class="kicker">Enclosure Design Utility</p>
-        <h1>Box Builder</h1>
-        <p class="subtitle">Subwoofer enclosure calculator</p>
-        <p class="section-hint build-id" id="buildId">-</p>
+        <div class="header-row">
+          <div>
+            <p class="kicker">Enclosure Design Utility</p>
+            <h1>Box Builder</h1>
+            <p class="subtitle">Subwoofer enclosure calculator</p>
+            <p class="section-hint build-id" id="buildId">-</p>
+          </div>
+          <nav class="site-links" aria-label="Site links">
+            <a class="site-link" href="guides/index.html">Guides</a>
+            <a class="site-link" href="about.html">About</a>
+            <a class="site-link" href="contact.html">Contact</a>
+            <a class="site-link" href="privacy.html">Privacy</a>
+          </nav>
+        </div>
       </header>
 
       <nav class="tab-nav card" aria-label="Workspace views">
@@ -45,6 +59,11 @@
           <p class="section-hint">1. Enter your available space. 2. Pick driver details. 3. Set target volume or use Quick Volume Sizing. 4. Review results before touching advanced port or 3D tools.</p>
           <p class="section-hint">Use 2D and 3D mainly to review fit and placement after your main numbers are close. If the app feels off, try <strong>Reset View Tools</strong> first.</p>
         </div>
+      </section>
+
+      <section class="card ad-shell" data-ad-slot hidden>
+        <p class="ad-label">Advertisement</p>
+        <p class="ad-copy" data-ad-copy>Ad space reserved for a future sponsor or approved ad network.</p>
       </section>
 
       <section class="card tab-panel space-step" data-panel="design">
@@ -730,8 +749,43 @@
         <p class="build-note">Build view keeps construction details separate from sizing workflow.</p>
         <div id="cutSheet" class="cut-sheet"></div>
       </section>
+
+      <section class="card content-card">
+        <p class="eyebrow">Guides</p>
+        <h2>Learn Before You Build</h2>
+        <p class="section-hint">These pages are meant to help first-time builders understand the tradeoffs behind the numbers the calculator gives them.</p>
+        <div class="content-grid">
+          <a class="card resource-card" href="guides/sealed-vs-ported.html">
+            <p class="eyebrow">Guide 01</p>
+            <h3>Sealed vs Ported</h3>
+            <p>Understand the real-world tradeoffs in box size, output, extension, and everyday use.</p>
+          </a>
+          <a class="card resource-card" href="guides/trunk-measurement-guide.html">
+            <p class="eyebrow">Guide 02</p>
+            <h3>How To Measure Trunk Space</h3>
+            <p>Get cleaner max-width, max-height, and max-depth numbers before you size the box.</p>
+          </a>
+          <a class="card resource-card" href="guides/wedge-box-guide.html">
+            <p class="eyebrow">Guide 03</p>
+            <h3>When To Use A Wedge Box</h3>
+            <p>Know when a wedge cabinet helps fitment and what to watch for before building one.</p>
+          </a>
+        </div>
+      </section>
+
+      <footer class="card site-footer">
+        <p>Box Builder is a planning tool for subwoofer enclosure design. Always verify dimensions, displacement, and build tolerances before cutting wood.</p>
+        <p>
+          <a href="about.html">About</a> ·
+          <a href="contact.html">Contact</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="guides/index.html">Guides</a>
+        </p>
+        <p>&copy; <span data-current-year></span> Box Builder</p>
+      </footer>
     </main>
 
+    <script src="site.js?v=2026-06-20-02"></script>
     <script src="src/js/boxMath.js?v=2026-06-20-02"></script>
     <script src="src/js/boxUI.js?v=2026-06-20-02"></script>
     <script src="src/js/boxValidation.js?v=2026-06-20-02"></script>
