@@ -1,450 +1,377 @@
-
-
 # boxBuilder Upgrade Plan
 
-## Vision
+## Current Product Snapshot
 
-Transform boxBuilder from a simple box volume calculator into a modern interactive speaker enclosure designer.
+boxBuilder is no longer just a simple volume calculator. The current app is a static HTML/CSS/vanilla JavaScript enclosure designer with a separated math layer in `boxMath.js` and a large UI/rendering layer in `app.js`.
 
-Target direction:
+Implemented today:
 
-- Tesla-style modern UI
-- Audio DSP / WinISD inspired workflows
-- Real-time visual feedback
-- Mobile-friendly
-- 2D SVG engineering views
-- Experimental 3D visualization using Three.js
-- Support for sealed and ported enclosures
-- Driver and port modeling
-- Future export possibilities (OpenSCAD/STL/CNC)
+- Rectangular and wedge/slanted cabinet support
+- Internal and external dimension workflows
+- Sealed and ported enclosure modes
+- Slot and round port inputs
+- Net volume calculations with driver, port, and bracing displacement
+- Constraint-aware target sizing and maximize-within-space sizing
+- Front, Side, and Top 2D designer views
+- Live drag editing for box dimensions and port positioning/length
+- Experimental Three.js preview with view presets, lock controls, and 3D edit mode
+- Parts Express paste/parse helper for recommended enclosure volumes
+- Cut sheet output
+- Local storage persistence
+- Node-based math tests
 
----
-
-# Core Architecture Direction
-
-The app should evolve into two major layers:
-
-## 1. Calculation Engine
-
-Responsible for:
-
-- Gross volume
-- Net volume
-- Material thickness
-- Driver displacement
-- Port displacement
-- Slot port calculations
-- Round port calculations
-- Tuning frequency
-- Air velocity warnings
-- Port fit validation
-- Internal clearance validation
-
-This layer should remain pure JavaScript math logic.
-
-No rendering logic should exist here.
+This document now tracks what is done, what is active-but-needs-hardening, and what remains ahead.
 
 ---
 
-## 2. Rendering Engine
+## Architecture Status
 
-Responsible for:
+### Calculation Layer
 
-- SVG 2D previews
-- Three.js 3D previews
-- Dimension labels
-- Driver placement
-- Port placement
-- Slanted cabinet rendering
-- Internal panel visualization
-- Warnings/highlights
-- Camera interaction
+Status: partially achieved
 
-The renderer should consume calculated state from the calculation engine.
+What is already true:
 
----
+- Core dimension and volume math lives in `boxMath.js`
+- Internal/external conversion is separated from DOM rendering
+- Constraint sizing helpers exist for target and maximize flows
+- Wedge depth handling is implemented in the math layer
 
-# Immediate Upgrade Priorities
+What still needs work:
 
-## Phase 1 — Slanted/Wedge Cabinet Support
+- Port tuning and advanced acoustics are still mixed into broader app logic instead of living in a clearly isolated math module
+- More enclosure/port-specific calculations should be moved out of `app.js`
+- The math layer needs broader test coverage for the newer port and wedge features
 
-Add support for wedge-style enclosures.
+### Rendering Layer
 
-New dimensions:
+Status: implemented, but too centralized
 
-```js
-{
-  width,
-  height,
-  topDepth,
-  bottomDepth
-}
-```
+What is already true:
 
-Volume calculation:
+- 2D SVG rendering exists for the main diagram plus front/side/top designer views
+- 3D preview exists and consumes calculated state
+- Drag interactions exist for 2D and 3D editing
+- Port placement, folded slot routing, and wedge visuals are rendered in the UI
 
-```js
-averageDepth = (topDepth + bottomDepth) / 2
-volume = width * height * averageDepth
-```
+What still needs work:
 
-Goals:
-
-- Slanted side profile
-- Mobile-friendly dimension entry
-- SVG wedge rendering
-- Internal/net volume support
-- Preserve existing rectangular workflow
+- `app.js` has grown very large and should be split once behavior stabilizes
+- Interaction/rendering/debug responsibilities are still tightly coupled
+- 3D editing needs more stabilization before deeper refactors
 
 ---
 
-## Phase 2 — Better 2D SVG Designer
+## Completed Upgrades
 
-Current SVG system should evolve into a true design preview.
+### Wedge Cabinet Support
 
-Views:
+Status: done
 
+Completed:
+
+- Added wedge/slanted cabinet mode
+- Added top-depth and bottom-depth handling
+- Added wedge-aware internal/external conversions
+- Added wedge volume math using average depth
+- Preserved the rectangular workflow
+
+### 2D Designer Upgrade
+
+Status: done
+
+Completed:
+
+- Live SVG box diagram
 - Front view
 - Side view
 - Top view
-- Combined engineering view
-
-Support rendering:
-
-- Driver cutout
-- Driver placement
-- Slot ports
-- Round ports
-- Dual round ports
 - Dimension labels
-- Slanted cabinets
-- Internal port walls
+- Driver and port visualization
+- Port length and position drag handles
+- Box W/H/D drag editing
+- Folded slot channel rendering in orthographic views
 
-Suggested renderer structure:
+### Driver Modeling Foundation
 
-```js
-box
- ├── front panel
- ├── side panels
- ├── top panel
- ├── bottom panel
- ├── driver objects
- └── port objects
-```
+Status: partially done
 
-SVG remains ideal for:
+Completed:
 
-- crisp labels
-- lightweight rendering
-- responsive layouts
-- engineering-style previews
-- mobile performance
+- Driver size selection
+- Driver quantity
+- Driver cutout diameter
+- Driver depth and mounting depth inputs
+- Driver displacement support
+- Basic driver visualization
+- Parts Express recommendation paste/parse helper
 
----
+Still missing:
 
-## Phase 3 — Driver Modeling
+- Named driver library/database
+- Saved custom driver presets
+- T/S parameter modeling
+- Collision/clearance validation beyond current basic sizing behavior
 
-Add real driver definitions.
+### Ported Enclosure Support
 
-Driver data structure:
+Status: done
 
-```js
-{
-  name,
-  size,
-  cutoutDiameter,
-  mountingDepth,
-  displacement,
-  recommendedSealed,
-  recommendedPorted
-}
-```
+Completed:
 
-Future possibilities:
+- Sealed and ported enclosure modes
+- Slot and round port modes
+- Slot width/height/length/count controls
+- Round diameter/length/quantity controls
+- Port displacement inclusion in net volume
+- Port positioning on enclosure faces
+- Port extension handling
+- Port preview rendering in 2D and 3D
 
-- Driver database
-- Dayton Audio presets
-- JL Audio presets
-- Custom driver save/load
-- T/S parameter support later
+### Auto Port and Folded Slot Work
 
-Visual support:
+Status: implemented, still being hardened
 
-- Driver circle rendering
-- Mounting depth visualization
-- Collision warnings
-- Multiple drivers
+Completed:
 
----
+- Auto port mode controls
+- Auto length and full-auto workflows
+- Port area-per-volume heuristics
+- Minimum size/length controls
+- Folded slot routing support
+- Slot channel count, gap, fold axis, fold direction, and lead-run offset controls
+- Interactive folded-slot editing in designer surfaces
 
-# Port System Roadmap
+Still needs work:
 
-## Phase 4 — Ported Enclosure Support
+- More validation around edge cases
+- Clearer UX around folded slot editing
+- More test coverage for routing and tuning outcomes
 
-Add enclosure modes:
+### Constraint-Aware Sizing
 
-```js
-sealed
-ported
-```
+Status: done
 
-Port types:
+Completed:
 
-```js
-slot
-round
-```
+- Trunk/hatch max constraints
+- Fit status messaging
+- Constraint-aware target-volume suggestion
+- Maximize-volume-within-constraints mode
+- Dimension priority ordering
+- Weight-based auto dimension biasing
 
----
+### Persistence and Build Workflow
 
-## Slot Port Modeling
+Status: done
 
-Inputs:
+Completed:
 
-```js
-{
-  width,
-  height,
-  length
-}
-```
-
-Capabilities:
-
-- Front slot ports
-- Bottom slot ports
-- Side slot ports
-- Internal wall visualization
-- Port displacement calculation
-- Folded port support later
+- Local storage persistence for primary state
+- Persisted Parts Express paste and parsed preview values
+- Static app workflow with no build tooling required
+- Node math test harness
 
 ---
 
-## Round Port Modeling
+## Active Upgrade Priorities
 
-Inputs:
+## Top 5 Critical Fixes
 
-```js
-{
-  diameter,
-  length,
-  quantity
-}
-```
+These are the most important fixes now that boxBuilder is live on GitHub Pages and needs to be trustworthy for end users.
 
-Capabilities:
+### 1. Stabilize 3D Editing
 
-- Single round port
-- Dual round ports
-- Aero ports later
-- Precision flared ports later
+Why it matters:
 
----
+- The 3D preview is one of the most visible features in the app
+- Inconsistent drag behavior or confusing mode switching will make users distrust the whole design
+- This is the highest-risk interaction surface today
 
-## Net Volume System
+Priority work:
 
-Net volume must subtract:
+- Make edit mode vs camera mode unmistakable
+- Verify drag behavior across real browser sessions and mobile touch use
+- Reduce accidental camera movement while editing
+- Keep the current debug/diagnostic support until interaction behavior is reliable
 
-```js
-netVolume =
-  grossVolume
-  - driverDisplacement
-  - portDisplacement
-  - bracingDisplacement
-```
+### 2. Add Real Test Coverage For Port, Wedge, And Folded-Slot Logic
 
-Display:
+Why it matters:
 
-- Gross volume
-- Net volume
-- Remaining airspace
-- Port displacement
-- Driver displacement
+- The app now includes much more than basic box math
+- Port sizing, displacement, folded routing, and wedge depth handling are easy to regress silently
+- Production changes need stronger protection before the feature set grows further
 
----
+Priority work:
 
-# Three.js Experimental Branch
+- Add wedge conversion and volume tests
+- Add port displacement and tuning-related tests
+- Add folded-slot route/profile normalization tests
+- Expand regression coverage around suggestion and constraint logic
 
-## Goal
+### 3. Add Browser/E2E Coverage Using A Local HTTP Workflow
 
-Add interactive 3D enclosure visualization.
+Why it matters:
 
-This should initially exist on a separate branch.
+- Many important failures are visual or interaction-based, not pure math failures
+- GitHub Pages users will experience the app in a browser, not through Node-only tests
+- The current `file://` limitations make some verification paths weak
 
-Suggested branch:
+Priority work:
 
-```bash
-git checkout -b threejs-preview
-```
+- Stand up a simple local HTTP validation flow
+- Add smoke tests for load, sizing, port mode switching, and designer interactions
+- Add targeted E2E coverage for the most fragile 2D/3D flows
 
----
+### 4. Strengthen Validation And User-Facing Warnings
 
-## Important Rule
+Why it matters:
 
-Three.js should NOT become the calculation engine.
+- End users need guidance when a design is invalid, unrealistic, or physically awkward
+- Silent failure or vague warnings can lead to bad builds
+- Production UX needs actionable feedback, not just internal correctness
 
-Three.js should ONLY visualize calculated state.
+Priority work:
 
-Math remains normal JS.
+- Improve invalid port geometry detection
+- Add better folded-slot feasibility warnings
+- Improve clearance and fit warnings
+- Rewrite warnings so they suggest fixes, not just report problems
 
----
+### 5. Refactor `app.js` Before More Major Feature Growth
 
-## Three.js Phase 1
+Why it matters:
 
-Render:
+- The current file is carrying too much state, rendering, parsing, and interaction logic
+- Every production fix is riskier while the code remains this centralized
+- End-user support will be easier if the codebase is simpler to reason about
 
-- Basic rectangular cabinet
-- Width/height/depth
-- Camera orbit controls
-- Mobile touch rotation
+Priority work:
 
-Goals:
+- Split 2D rendering, 3D rendering, state sync, and interaction logic into smaller modules
+- Move more reusable calculations into `boxMath.js`
+- Isolate Parts Express parsing and preview behavior
+- Refactor only after the current interaction behavior is stable enough to protect
 
-- Verify performance
-- Validate architecture
-- Test responsiveness
-- Test mobile rendering
+### 1. Stabilize 3D Editing
 
----
+Status: active
 
-## Three.js Phase 2
+Why this remains a priority:
 
-Add:
+- 3D preview exists, but interaction reliability is still the biggest product risk
+- Pointer-event fallback and debug messaging are present, but the UX is still experimental
+- This is the area most likely to confuse users if behavior drifts
 
-- Slanted cabinets
-- Real panel geometry
-- Front baffle rendering
-- Driver cutout holes
-- Port cutout holes
+Remaining work:
 
----
+- Verify drag/edit behavior thoroughly in a served browser session
+- Reduce accidental conflicts between camera controls and edit controls
+- Improve handle discoverability and edit affordances
+- Keep debug instrumentation available until behavior is trustworthy
 
-## Three.js Phase 3
+### 2. Expand Test Coverage
 
-Add:
+Status: active
 
-- Driver meshes
-- Slot port tunnels
-- Round ports
-- Internal walls
-- Transparency mode
-- Wireframe mode
-- Exploded view
+Remaining work:
 
----
+- Add wedge-specific unit tests for depth conversion and net/gross volume behavior
+- Add tests for port displacement math
+- Add tests for auto-port sizing and tuning helpers
+- Add tests for folded slot routing/profile normalization
+- Add browser or E2E coverage through a local HTTP flow instead of `file://`
 
-## Three.js Phase 4
+### 3. Refactor `app.js`
 
-Add interaction:
+Status: active
 
-- Rotate
-- Zoom
-- Pan
-- Reset camera
-- Toggle views
-- Section cut views
+Remaining work:
 
----
+- Extract rendering utilities from event handling
+- Separate 2D designer logic from 3D preview logic
+- Move more reusable calculation code into `boxMath.js`
+- Isolate Parts Express parsing and preview state from the main app flow
 
-# Potential Future Features
+### 4. Documentation Catch-Up
 
-## Acoustic Features
+Status: in progress
 
-Possible future calculations:
+Remaining work:
 
-- Port tuning frequency
-- Port velocity
-- Compression warnings
-- Recommended tuning ranges
-- Sealed Qtc estimates
-- Group delay graphs
-- Excursion estimates
-
-Potential future integrations:
-
-- WinISD-style graphs
-- Frequency response simulation
-- Cabin gain simulation
+- Keep `readme.md`, `upgrades.md`, and `ChatBridge.md` synchronized
+- Document current port/fold/designer workflows more clearly
+- Add a short manual test checklist for 3D editing
 
 ---
 
-## Box Construction Features
+## Remaining Roadmap
 
-Potential additions:
+### Near-Term
+
+- Harden 3D editing and camera/edit mode transitions
+- Improve production-readiness for GitHub Pages end users
+- Improve folded slot UX and validation messaging
+- Add browser/E2E coverage
+- Refactor the rendering and interaction code into smaller modules
+
+### Mid-Term
+
+- Driver preset library and custom saved drivers
+- Better clearance/collision validation
+- Port velocity/compression warnings
+- Recommended tuning-range guidance
+- Better build/cut-sheet detail for real construction workflows
+- Named save/load presets for user projects
+- Production-safe onboarding/help text for first-time users
+
+### Long-Term
 
 - Bracing generator
-- Cut sheet generation
 - Material optimizer
-- Kerf compensation
-- CNC export
-- OpenSCAD export
-- STL export
-- DXF export
+- Kerf and construction-method options
+- Print/export for cut sheet and current configuration
+- DXF/OpenSCAD/STL/CNC-oriented exports
+- Response/graph tooling inspired by WinISD-style workflows
 
 ---
 
-## Visual Features
+## Items No Longer Accurate In The Old Plan
 
-Ideas:
+The previous version of this file assumed these were future upgrades. They are now already present in the app:
 
-- Realistic textures
-- Carpet/vinyl preview
-- Transparent panels
-- Neon UI effects
-- Animated lighting
-- Internal airflow visualization
+- Wedge/slanted cabinet support
+- Multiple 2D engineering/designer views
+- Sealed and ported enclosure modes
+- Driver displacement and bracing displacement handling
+- Slot and round port modeling
+- Experimental Three.js preview
+- Interactive 3D controls and edit mode
+- Basic cut sheet generation
 
----
-
-# Recommended Development Order
-
-## Stable Path
-
-1. Slanted cabinet math
-2. SVG wedge rendering
-3. Driver modeling
-4. Port displacement math
-5. Slot/round port rendering
-6. Net volume system
-7. Port tuning calculations
-8. Three.js preview branch
-9. Interactive 3D features
-10. Export systems
+The previous recommendation to keep Three.js on a separate branch is also outdated. The experimental 3D preview is already integrated into the main app.
 
 ---
 
-# Important Architectural Notes
+## Recommended Development Order From Here
 
-## Keep Math Separate From Rendering
-
-The rendering engine should never calculate enclosure logic.
-
-Everything should come from a shared enclosure state.
-
----
-
-## Avoid Overengineering Early
-
-Do NOT immediately build:
-
-- full CAD
-- physics simulation
-- mesh editing
-- complex collision systems
-- procedural geometry engines
-
-First goal:
-
-Create a fast, intuitive enclosure designer.
+1. Stabilize and verify 3D editing behavior.
+2. Add unit coverage for wedge, port, and folded-slot logic.
+3. Add browser/E2E coverage via local HTTP serving.
+4. Strengthen validation and user-facing warnings for production use.
+5. Refactor `app.js` into clearer math/render/interaction modules.
+6. Improve driver presets, onboarding, and save/load workflows.
+7. Expand construction/export workflows.
 
 ---
 
-# Long-Term Goal
+## Long-Term Goal
 
-boxBuilder should eventually feel like:
+boxBuilder should feel like a lightweight enclosure-planning tool that sits between a simple calculator and a full CAD workflow:
 
-- WinISD + modern SaaS UI
-- audio DSP software
-- lightweight CAD preview
-- mobile-friendly speaker enclosure designer
-- enthusiast-grade enclosure planning tool
+- fast to use
+- visually clear
+- mobile-friendly
+- accurate enough for planning
+- interactive enough to make enclosure layout intuitive

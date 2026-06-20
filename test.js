@@ -10,7 +10,7 @@ const assert = (typeof require !== 'undefined') ? require('node:assert/strict') 
 let BoxMath;
 if (typeof require !== 'undefined') {
   // eslint-disable-next-line global-require
-  BoxMath = require('./boxMath');
+  BoxMath = require('./src/js/boxMath');
 } else {
   BoxMath = window.BoxMath;
 }
@@ -20,11 +20,15 @@ const {
   getNetVolume,
   getInternalDimensions,
   getExternalDimensions,
+  getPortDisplacementFt3,
+  getTotalDisplacementFt3,
   getConstraintData,
   getSuggestedInternalDimensions,
   applyConstraintToSuggested,
   getMaximizeSuggestion,
-  getTargetPrioritySuggestion
+  getTargetPrioritySuggestion,
+  normalizeSlotRunProfile,
+  getFoldedSlotOverflow
 } = BoxMath;
 
 function testGetVolume() {
@@ -350,6 +354,101 @@ function testTargetPriorityPrefersHeightFirst() {
   console.log('✓ testTargetPriorityPrefersHeightFirst passed');
 }
 
+function testWedgeDimensionConversion() {
+  const state = {
+    cabinetStyle: 'wedge',
+    dimensionMode: 'external',
+    width: 30,
+    height: 15,
+    topDepth: 12,
+    bottomDepth: 16,
+    woodThickness: 0.75
+  };
+
+  const internal = getInternalDimensions(state);
+  assert.ok(Math.abs(internal.width - 28.5) < 1e-6);
+  assert.ok(Math.abs(internal.height - 13.5) < 1e-6);
+  assert.ok(Math.abs(internal.topDepth - 10.5) < 1e-6);
+  assert.ok(Math.abs(internal.bottomDepth - 14.5) < 1e-6);
+  assert.ok(Math.abs(internal.depth - 12.5) < 1e-6);
+
+  const vol = getVolume(internal);
+  assert.ok(Math.abs(vol.in3 - (28.5 * 13.5 * 12.5)) < 1e-6);
+
+  console.log('✓ testWedgeDimensionConversion passed');
+}
+
+function testPortDisplacementForRoundAndSlot() {
+  const roundState = {
+    enclosureType: 'ported',
+    portType: 'round',
+    roundPortDiameter: 4,
+    roundPortLength: 12,
+    roundPortQuantity: 2,
+    portExtensionMode: 'internal'
+  };
+  const roundDisp = getPortDisplacementFt3(roundState);
+  const roundExpected = ((Math.PI * 2 * 2 * 12) * 2) / 1728;
+  assert.ok(Math.abs(roundDisp - roundExpected) < 1e-9);
+
+  const slotState = {
+    enclosureType: 'ported',
+    portType: 'slot',
+    slotPortWidth: 12,
+    slotPortHeight: 1.5,
+    slotPortLength: 18,
+    slotPortCount: 1,
+    portExtensionMode: 'split',
+    driverDisplacement: 0.08,
+    driverCount: 2,
+    bracingDisplacement: 0.1
+  };
+  const slotDisp = getPortDisplacementFt3(slotState);
+  const slotExpected = (12 * 1.5 * 9) / 1728;
+  assert.ok(Math.abs(slotDisp - slotExpected) < 1e-9);
+
+  const totalDisp = getTotalDisplacementFt3(slotState);
+  assert.ok(Math.abs(totalDisp - (0.16 + 0.1 + slotExpected)) < 1e-9);
+
+  console.log('✓ testPortDisplacementForRoundAndSlot passed');
+}
+
+function testNormalizeSlotRunProfile() {
+  const runs = normalizeSlotRunProfile([20, 1, 1], 3, 24, 4, 0);
+  const sum = runs.reduce((acc, value) => acc + value, 0);
+  assert.ok(Math.abs(sum - 24) < 1e-6, `Expected run total 24, got ${sum}`);
+  assert.ok(runs.every((value) => value >= 4), 'Every run should respect the minimum length');
+
+  console.log('✓ testNormalizeSlotRunProfile passed');
+}
+
+function testFoldedSlotOverflowDetection() {
+  const currentState = {
+    slotPortChannelCount: 3,
+    slotPortChannelGap: 1,
+    slotPortRunProfile: [],
+    slotPortLeadRunOffset: 0,
+    designerSnapIncrement: 0.25
+  };
+  const instance = {
+    tangentA: 'x',
+    tangentB: 'y',
+    openingA: 8,
+    openingB: 2,
+    internalLength: 24,
+    center: { x: 0, y: 0, z: 0 },
+    foldAxis: 'x',
+    directionSign: 1
+  };
+  const enclosureHalf = { x: 8, y: 8, z: 8 };
+  const result = getFoldedSlotOverflow(currentState, instance, enclosureHalf);
+
+  assert.equal(result.effectiveChannels, 3);
+  assert.ok(result.overflows.length >= 1, 'Expected overflow when folded lanes exceed the X boundary');
+
+  console.log('✓ testFoldedSlotOverflowDetection passed');
+}
+
 // Run all tests
 function runAllTests() {
   console.log('🧪 Running Box Builder Math Tests...\n');
@@ -365,6 +464,10 @@ function runAllTests() {
     testConstrainedTargetCanGrowNonLimitingDimensions();
     testTargetModeIgnoresManualCurrentRatios();
     testTargetPriorityPrefersHeightFirst();
+    testWedgeDimensionConversion();
+    testPortDisplacementForRoundAndSlot();
+    testNormalizeSlotRunProfile();
+    testFoldedSlotOverflowDetection();
 
     console.log('\n✅ All tests passed!');
   } catch (error) {
@@ -385,6 +488,10 @@ if (typeof module !== 'undefined' && module.exports) {
     testConstrainedTargetCanGrowNonLimitingDimensions,
     testTargetModeIgnoresManualCurrentRatios,
     testTargetPriorityPrefersHeightFirst,
+    testWedgeDimensionConversion,
+    testPortDisplacementForRoundAndSlot,
+    testNormalizeSlotRunProfile,
+    testFoldedSlotOverflowDetection,
     runAllTests
   };
 }
