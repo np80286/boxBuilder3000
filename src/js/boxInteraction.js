@@ -486,10 +486,10 @@ function createInteraction(deps) {
   };
 }
 
-const api = { createInteraction };
+const boxInteractionApi = { createInteraction };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxInteractionApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxInteraction = api;
+  window.BoxInteraction = boxInteractionApi;
 }

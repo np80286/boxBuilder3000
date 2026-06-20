@@ -8,11 +8,14 @@ const assert = (typeof require !== 'undefined') ? require('node:assert/strict') 
 // Import pure math helpers (Node.js context)
 // In browser, BoxMath will be attached to window.
 let BoxMath;
+let BoxUI;
 if (typeof require !== 'undefined') {
   // eslint-disable-next-line global-require
   BoxMath = require('./src/js/boxMath');
+  BoxUI = require('./src/js/boxUI');
 } else {
   BoxMath = window.BoxMath;
+  BoxUI = window.BoxUI;
 }
 
 const {
@@ -30,6 +33,12 @@ const {
   normalizeSlotRunProfile,
   getFoldedSlotOverflow
 } = BoxMath;
+
+const {
+  getPortModeLabel,
+  updateAdvancedSummaryChips,
+  updateSpaceInfo
+} = BoxUI;
 
 function testGetVolume() {
   // Test case from screenshots:
@@ -422,6 +431,57 @@ function testNormalizeSlotRunProfile() {
   console.log('✓ testNormalizeSlotRunProfile passed');
 }
 
+function testUpdateAdvancedSummaryChipsGuard() {
+  global.document = {
+    getElementById: () => null
+  };
+
+  if (assert) {
+    assert.doesNotThrow(() => updateAdvancedSummaryChips(undefined));
+    assert.doesNotThrow(() => updateAdvancedSummaryChips(null));
+  } else {
+    console.assert(() => updateAdvancedSummaryChips(undefined));
+    console.assert(() => updateAdvancedSummaryChips(null));
+  }
+
+  console.log('✓ testUpdateAdvancedSummaryChipsGuard passed');
+}
+
+function testUpdateSpaceInfoGuard() {
+  let capturedText = '';
+  global.document = {
+    getElementById: () => ({ set textContent(value) { capturedText = value; } })
+  };
+
+  if (assert) {
+    assert.doesNotThrow(() => updateSpaceInfo(undefined));
+    assert.doesNotThrow(() => updateSpaceInfo(null));
+  } else {
+    console.assert(() => updateSpaceInfo(undefined));
+    console.assert(() => updateSpaceInfo(null));
+  }
+
+  if (assert) {
+    assert.equal(capturedText, 'Unable to read space constraints');
+  } else {
+    console.assert(capturedText === 'Unable to read space constraints');
+  }
+
+  console.log('✓ testUpdateSpaceInfoGuard passed');
+}
+
+function testGetPortModeLabelGuard() {
+  if (assert) {
+    assert.equal(getPortModeLabel({ enclosureType: 'sealed', autoPortMode: 'manual' }), 'Sealed cabinet');
+    assert.equal(getPortModeLabel({ enclosureType: 'ported', portType: 'slot', autoPortMode: 'manual' }), 'Slot port • manual sizing');
+  } else {
+    console.assert(getPortModeLabel({ enclosureType: 'sealed', autoPortMode: 'manual' }) === 'Sealed cabinet');
+    console.assert(getPortModeLabel({ enclosureType: 'ported', portType: 'slot', autoPortMode: 'manual' }) === 'Slot port • manual sizing');
+  }
+
+  console.log('✓ testGetPortModeLabelGuard passed');
+}
+
 function testFoldedSlotOverflowDetection() {
   const currentState = {
     slotPortChannelCount: 3,
@@ -467,6 +527,9 @@ function runAllTests() {
     testWedgeDimensionConversion();
     testPortDisplacementForRoundAndSlot();
     testNormalizeSlotRunProfile();
+    testUpdateAdvancedSummaryChipsGuard();
+    testUpdateSpaceInfoGuard();
+    testGetPortModeLabelGuard();
     testFoldedSlotOverflowDetection();
 
     console.log('\n✅ All tests passed!');
@@ -491,6 +554,9 @@ if (typeof module !== 'undefined' && module.exports) {
     testWedgeDimensionConversion,
     testPortDisplacementForRoundAndSlot,
     testNormalizeSlotRunProfile,
+    testUpdateAdvancedSummaryChipsGuard,
+    testUpdateSpaceInfoGuard,
+    testGetPortModeLabelGuard,
     testFoldedSlotOverflowDetection,
     runAllTests
   };

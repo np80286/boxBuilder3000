@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-
+;(function () {
 function isCompactViewport() {
   return window.matchMedia('(max-width: 640px)').matches;
 }
@@ -11,6 +11,8 @@ function getPortModeLabel(currentState) {
 }
 
 function updateAdvancedSummaryChips(currentState) {
+  if (!currentState || typeof currentState !== 'object') return;
+
   const enclosureSummary = document.getElementById('enclosureAdvancedSummary');
   if (enclosureSummary) {
     enclosureSummary.textContent = getPortModeLabel(currentState);
@@ -313,7 +315,7 @@ function markIfModified(el) {
   }
 }
 
-const api = {
+const boxUIApi = {
   isCompactViewport,
   getPortModeLabel,
   updateAdvancedSummaryChips,
@@ -333,7 +335,8 @@ const api = {
 };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxUIApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxUI = api;
+  window.BoxUI = boxUIApi;
 }
+})();

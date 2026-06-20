@@ -847,10 +847,10 @@ function createController(deps) {
   };
 }
 
-const api = { createController };
+const boxControllerApi = { createController };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxControllerApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxController = api;
+  window.BoxController = boxControllerApi;
 }

@@ -114,10 +114,10 @@ function createValidator(deps) {
   };
 }
 
-const api = { createValidator };
+const boxValidationApi = { createValidator };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxValidationApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxValidation = api;
+  window.BoxValidation = boxValidationApi;
 }

@@ -525,7 +525,7 @@ function getTargetPrioritySuggestion(currentState, constraintData) {
   return { internal, maxed };
 }
 
-const api = {
+const boxMathApi = {
   safeNumber,
   getDepthPair,
   getInternalDimensions,
@@ -551,7 +551,7 @@ const api = {
 };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxMathApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxMath = api;
+  window.BoxMath = boxMathApi;
 }

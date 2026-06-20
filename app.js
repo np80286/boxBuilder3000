@@ -10,7 +10,7 @@ Vented F3\t23Hz`;
 
 const {
   isCompactViewport,
-  updateAdvancedSummaryChips,
+  updateAdvancedSummaryChips: updateAdvancedSummaryChipsUI,
   applyResponsivePanelDefaults: applyResponsivePanelDefaultsUI,
   renderWarnings: renderWarningsUI,
   updateSpaceInfo: updateSpaceInfoUI,
@@ -25,6 +25,16 @@ const {
   loadPersistedParsedPreview: loadPersistedParsedPreviewUI,
   markIfModified
 } = window.BoxUI;
+
+function updateAdvancedSummaryChips() {
+  if (!state || typeof state !== 'object') return;
+  updateAdvancedSummaryChipsUI(state);
+}
+
+function updateSpaceInfo() {
+  if (!state || typeof state !== 'object') return;
+  updateSpaceInfoUI(state);
+}
 
 const validateBox = window.BoxValidation.createValidator({
   safeNumber,
@@ -1967,6 +1977,7 @@ function renderPresetState() {
 }
 
 function updateSpaceInfo() {
+  if (!state || typeof state !== 'object') return;
   updateSpaceInfoUI(state);
 }
 
@@ -2232,6 +2243,17 @@ window.addEventListener('resize', () => {
   applyResponsivePanelDefaults();
   updateAdvancedSummaryChips();
 });
+
+if (typeof window !== 'undefined') {
+  window.updateAdvancedSummaryChips = updateAdvancedSummaryChips;
+  window.updateSpaceInfo = updateSpaceInfo;
+  window.renderUI = renderUI;
+  window.BoxApp = Object.assign(window.BoxApp || {}, {
+    updateAdvancedSummaryChips,
+    updateSpaceInfo,
+    renderUI
+  });
+}
 
 // Seed/persist Parts Express paste + preview defaults so Apply Preview works without re-pasting.
 if (inputs.partsSpecPaste) {

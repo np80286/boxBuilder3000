@@ -1276,10 +1276,10 @@ function createRender3d(deps) {
   };
 }
 
-const api = { createRender3d };
+const boxRender3dApi = { createRender3d };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxRender3dApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxRender3D = api;
+  window.BoxRender3D = boxRender3dApi;
 }

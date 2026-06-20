@@ -600,10 +600,10 @@ function createRender2d(deps) {
   };
 }
 
-const api = { createRender2d };
+const boxRender2dApi = { createRender2d };
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = api;
+  module.exports = boxRender2dApi;
 } else if (typeof window !== 'undefined') {
-  window.BoxRender2D = api;
+  window.BoxRender2D = boxRender2dApi;
 }
