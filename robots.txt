@@ -6,3 +6,4 @@ Disallow: /smoke.js
 Disallow: /test.js
 Disallow: /package.json
 Disallow: /docs/
+Sitemap: https://www.paisleydevelopment.com/boxBuilder3000/sitemap.xml
