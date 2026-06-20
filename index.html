@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <title>Box Builder</title>
     <script>
-      window.BOX_BUILDER_ASSET_VERSION = '2026-06-17-01';
+      window.BOX_BUILDER_ASSET_VERSION = '2026-06-20-01';
       (function ensureVersionedUrl() {
         try {
           var expected = window.BOX_BUILDER_ASSET_VERSION;
@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2026-06-17-01" />
+    <link rel="stylesheet" href="styles.css?v=2026-06-20-01" />
   </head>
   <body>
     <main class="app-shell">
@@ -35,7 +35,7 @@
         <p class="kicker">Enclosure Design Utility</p>
         <h1>Box Builder</h1>
         <p class="subtitle">Subwoofer enclosure calculator</p>
-        <p class="section-hint" id="buildId" style="margin-top:0.35rem;">-</p>
+        <p class="section-hint build-id" id="buildId">-</p>
       </header>
 
       <nav class="tab-nav card" aria-label="Workspace views">
@@ -49,16 +49,26 @@
 
       <section class="card workflow-guide">
         <p class="workflow-text">📋 Set trunk limits → 🔊 Choose driver → 🎯 Target volume → ✨ Get dimensions</p>
+        <p class="workflow-subtext">Mobile tip: use the main setup cards first, then open Advanced only if you need port routing or 3D tuning controls.</p>
+        <div class="inline-actions top-gap-sm">
+          <button id="showUsageBtn" type="button" class="ghost-btn">How To Use</button>
+          <button id="resetViewBtn" type="button" class="ghost-btn">Reset View Tools</button>
+          <button id="resetAppBtn" type="button" class="ghost-btn">Reset App</button>
+        </div>
+        <div id="usageGuide" class="helper-panel top-gap-sm" hidden>
+          <p class="section-hint">1. Enter your available space. 2. Pick driver details. 3. Set target volume or use Quick Volume Sizing. 4. Review results before touching advanced port or 3D tools.</p>
+          <p class="section-hint">Use 2D and 3D mainly to review fit and placement after your main numbers are close. If the app feels off, try <strong>Reset View Tools</strong> first.</p>
+        </div>
       </section>
 
-      <section class="card tab-panel" data-panel="design">
+      <section class="card tab-panel space-step" data-panel="design">
         <h2>Maximum Trunk / Hatch Area</h2>
         <p class="section-hint">These are the hard limits for your enclosure based on available space.</p>
         <label class="check-row">
           <input id="useMaxConstraints" type="checkbox" checked />
           <span>Use trunk constraints</span>
         </label>
-        <div class="field-grid" style="margin-top:0.6rem;">
+        <div class="field-grid top-gap-sm">
           <label class="field">
             <span>Suggestion Mode</span>
             <select id="suggestionMode">
@@ -84,7 +94,7 @@
         <div class="space-info" id="spaceInfo">Available space: calculating...</div>
       </section>
 
-      <section class="card tab-panel" data-panel="design">
+      <section class="card tab-panel driver-step" data-panel="design">
         <h2>Driver Selection</h2>
         <div class="field-grid single-row">
           <label class="field">
@@ -98,7 +108,7 @@
             </select>
           </label>
         </div>
-        <div class="field-grid" style="margin-top: 0.7rem;">
+        <div class="field-grid top-gap-md">
           <label class="field">
             <span>Driver Displacement (ft³) — Reduces usable volume</span>
             <input id="driverDisplacement" type="number" min="0" step="0.001" value="0.08" />
@@ -113,7 +123,7 @@
           </label>
         </div>
 
-        <div class="field-grid" style="margin-top:0.6rem;">
+        <div class="field-grid top-gap-sm">
           <label class="field">
             <span>Driver Cutout Diameter (in)</span>
             <input id="driverCutout" type="number" min="0" step="0.01" value="11.1" />
@@ -124,7 +134,7 @@
           </label>
         </div>
 
-        <div class="field-grid" style="margin-top:0.6rem;">
+        <div class="field-grid top-gap-sm">
           <label class="field">
             <span>Sensitivity (dB @ 1W/1m)</span>
             <input id="driverSensitivity" type="number" min="0" step="0.1" value="88" />
@@ -135,45 +145,48 @@
           </label>
         </div>
 
-        <div style="margin-top:0.6rem;">
-          <label class="field" style="display:block;">
+        <div class="top-gap-sm">
+          <label class="field block-field">
             <span>Paste driver recommended volumes (Parts Express)</span>
-            <textarea id="partsSpecPaste" rows="3" style="width:100%; padding:0.5rem; border-radius:8px; background:var(--panel); color:var(--text);"></textarea>
+            <textarea id="partsSpecPaste" rows="3" class="parts-spec-textarea"></textarea>
           </label>
-          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <div class="inline-actions top-gap-xs">
             <button id="parsePartsBtn" type="button" class="action-btn">Parse & Apply</button>
             <button id="clearPartsBtn" type="button" class="ghost-btn">Clear</button>
           </div>
         </div>
 
-        <div id="parsedPreview" style="margin-top:0.8rem; border-radius:8px; padding:0.6rem; background:rgba(255,255,255,0.02);">
-          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-            <label class="field" style="flex:1 1 180px;">
+        <div id="parsedPreview" class="helper-panel top-gap-md">
+          <div class="inline-field-wrap">
+            <label class="field helper-field">
               <span>Parsed Sealed Volume (ft³)</span>
               <input id="parsedSealedVolume" type="number" step="0.01" />
             </label>
-            <label class="field" style="flex:1 1 180px;">
+            <label class="field helper-field">
               <span>Parsed Vented Volume (ft³)</span>
               <input id="parsedVentedVolume" type="number" step="0.01" />
             </label>
-            <label class="field" style="flex:1 1 140px;">
+            <label class="field helper-field helper-field-sm">
               <span>Sealed F3 (Hz)</span>
               <input id="parsedSealedF3" type="number" step="1" />
             </label>
-            <label class="field" style="flex:1 1 140px;">
+            <label class="field helper-field helper-field-sm">
               <span>Vented F3 (Hz)</span>
               <input id="parsedVentedF3" type="number" step="1" />
             </label>
           </div>
-          <p class="section-hint" style="margin-top:0.4rem;">You can adjust these values manually — edited fields are highlighted. Click <strong>Apply Preview</strong> to use the previewed values. Clicking <strong>Parse & Apply</strong> will re-parse the paste and reset these preview values to the pasted data.</p>
-          <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
+          <p class="section-hint top-gap-xs">You can adjust these values manually — edited fields are highlighted. Click <strong>Apply Preview</strong> to use the previewed values. Clicking <strong>Parse & Apply</strong> will re-parse the paste and reset these preview values to the pasted data.</p>
+          <div class="inline-actions top-gap-xs">
             <button id="applyParsedBtn" type="button" class="action-btn">Apply Preview</button>
             <button id="resetParsedBtn" type="button" class="ghost-btn">Reset Preview</button>
           </div>
         </div>
 
-        <details class="advanced-panel" style="margin-top: 1rem;" open>
-          <summary>Enclosure Type & Tuning</summary>
+        <details class="advanced-panel top-gap-lg" id="enclosureAdvancedPanel" open>
+          <summary>
+            <span>Enclosure & Advanced Port Setup</span>
+            <span class="summary-chip" id="enclosureAdvancedSummary">Sealed cabinet</span>
+          </summary>
           <div class="field-grid">
             <label class="field">
               <span>Enclosure Type</span>
@@ -191,7 +204,7 @@
               <input id="bracingDisplacement" type="number" min="0" step="0.01" value="0" />
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.8rem;">
+          <div class="field-grid top-gap-md">
             <label class="field">
               <span>Port Type</span>
               <select id="portType">
@@ -228,7 +241,7 @@
               <input id="roundPortQuantity" type="number" min="1" step="1" value="1" />
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.8rem;">
+          <div class="field-grid top-gap-md">
             <label class="field">
               <span>Auto Port Mode</span>
               <select id="autoPortMode">
@@ -258,7 +271,7 @@
               <input id="autoPortMinLength" type="number" min="0.01" step="0.01" value="0.5" />
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.6rem;">
+          <div class="field-grid top-gap-sm">
             <label class="field">
               <span>Speed Of Sound (in/s)</span>
               <input id="portTuningSpeedOfSound" type="number" min="0.01" step="0.1" value="13503.9" />
@@ -276,10 +289,13 @@
               <input id="portTuningLengthAdjustment" type="number" step="0.01" value="0" />
             </label>
           </div>
-          <p class="section-hint" id="autoPortSummary" style="font-size: 0.85rem; margin-top: 0.5rem;">
+          <p class="section-hint top-gap-xs" id="autoPortSummary">
             Manual port sizing is active.
           </p>
-          <div class="field-grid" style="margin-top:0.8rem;">
+          <p class="section-hint top-gap-xs" id="portModeHint">
+            Port mode: manual sizing keeps your typed values. Auto Length updates length only. Full Auto can change opening size and length.
+          </p>
+          <div class="field-grid top-gap-md">
             <label class="field">
               <span>Auto Dimension Priority 1</span>
               <select id="autoPriority1">
@@ -305,7 +321,7 @@
               </select>
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.6rem;">
+          <div class="field-grid top-gap-sm">
             <label class="field">
               <span>Width Weight (%)</span>
               <input id="autoWeightWidth" type="number" min="0" max="100" step="1" value="33" />
@@ -319,13 +335,13 @@
               <input id="autoWeightDepth" type="number" min="0" max="100" step="1" value="33" />
             </label>
           </div>
-          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+          <p class="section-hint top-gap-xs">
             Auto dimensioning uses the priority order first, then weights to bias the base shape before fitting target volume within constraints.
           </p>
-          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+          <p class="section-hint top-gap-xs">
             Tuning frequency affects port design. Sealed enclosures don't require tuning calculation.
           </p>
-          <div class="field-grid" style="margin-top:0.8rem;">
+          <div class="field-grid top-gap-md">
             <label class="field">
               <span>Port Mount Face</span>
               <select id="portMountFace">
@@ -357,7 +373,7 @@
               </select>
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.6rem;">
+          <div class="field-grid top-gap-sm">
             <label class="field">
               <span>Port Offset X (in)</span>
               <input id="portOffsetX" type="number" step="0.01" value="0" />
@@ -371,7 +387,7 @@
               <input id="portOffsetZ" type="number" step="0.01" value="0" />
             </label>
           </div>
-          <div class="field-grid" style="margin-top:0.6rem;">
+          <div class="field-grid top-gap-sm">
             <label class="field">
               <span>Slot Port Internal Channels</span>
               <input id="slotPortChannelCount" type="number" min="1" step="1" value="1" />
@@ -402,10 +418,10 @@
               <input id="slotPortLeadRunOffset" type="number" step="0.01" value="0" />
             </label>
           </div>
-          <p class="section-hint" style="font-size: 0.85rem; margin-top: 0.5rem;">
+          <p class="section-hint top-gap-xs">
             Offsets are measured from the enclosure center. The selected face uses the two relevant axes and ignores depth-normal offset.
           </p>
-          <div class="field-grid" style="margin-top:0.8rem;">
+          <div class="field-grid top-gap-md">
             <label class="field">
               <span>3D Shell Opacity</span>
               <input id="threeShellOpacity" type="range" min="0.05" max="1" step="0.01" value="0.24" />
@@ -422,7 +438,47 @@
         </details>
       </section>
 
-      <section class="card viz-card tab-panel" data-panel="design">
+      <section class="card outputs sticky-results tab-panel results-step" data-panel="design">
+        <h2>Calculated Output</h2>
+        <div class="result-status-row">
+          <span class="summary-chip" id="modeSummaryChip">External • Rectangular • Sealed</span>
+          <span class="summary-chip" id="fitSummaryChip">Fit status pending</span>
+          <span class="summary-chip" id="portStateChip">Manual sizing</span>
+        </div>
+        <div class="output-grid">
+          <div class="metric">
+            <span class="label">Internal Dimensions</span>
+            <span class="value" id="internalDimensions">-</span>
+          </div>
+          <div class="metric">
+            <span class="label">External Dimensions</span>
+            <span class="value" id="externalDimensions">-</span>
+          </div>
+          <div class="metric">
+            <span class="label">Gross Volume</span>
+            <span class="value" id="grossVolume">-</span>
+          </div>
+          <div class="metric">
+            <span class="label">Net Before Driver</span>
+            <span class="value" id="netBefore">-</span>
+          </div>
+          <div class="metric highlight">
+            <span class="label">Net After Driver</span>
+            <span class="value" id="netAfter">-</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card warnings-card tab-panel status-step" data-panel="design">
+        <h2>Status</h2>
+        <div class="result-status-row">
+          <span class="summary-chip" id="confidenceChip">Review pending</span>
+        </div>
+        <p class="section-hint">Use this as a build-sanity panel. Informational notes are normal, but fix warnings before trusting the cut sheet.</p>
+        <ul id="warnings" class="warnings" aria-live="polite"></ul>
+      </section>
+
+      <section class="card viz-card tab-panel diagram-step" data-panel="design">
         <h2>Live Box Diagram</h2>
         <svg
           id="boxDiagram"
@@ -449,11 +505,11 @@
             <span class="section-hint">Quick adjust uses your current dimension mode (internal/external).</span>
             <span class="diagram-volume" id="quickVolume">-</span>
           </div>
-          <label class="check-row" style="margin-top:0.7rem;">
+          <label class="check-row top-gap-md">
             <input id="designerMode" type="checkbox" />
             <span>Designer Mode (drag box handles in diagram)</span>
           </label>
-          <div class="field-grid" style="margin-top:0.7rem;">
+          <div class="field-grid top-gap-md">
             <label class="field compact">
               <span>Designer Snap (in)</span>
               <input id="designerSnapIncrement" type="number" min="0.01" step="0.01" value="0.25" />
@@ -462,121 +518,7 @@
         </div>
       </section>
 
-      <section class="card viz-card tab-panel" data-panel="design">
-        <h2>Experimental 3D Preview</h2>
-        <div id="threePreview" style="width:100%; height:280px; border-radius:12px; border:1px solid rgba(138,180,255,0.24); background:rgba(3,8,17,0.8);"></div>
-        <div class="field-grid" style="margin-top:0.6rem;">
-          <label class="field">
-            <span>Depth Direction</span>
-            <select id="threeDepthDirection">
-              <option value="front_to_back" selected>Front seat → Rear hatch</option>
-              <option value="back_to_front">Rear hatch → Front seat</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Box Position (Depth)</span>
-            <select id="threeBoxAnchor">
-              <option value="rear">Near rear hatch</option>
-              <option value="center">Centered</option>
-              <option value="front" selected>Near front seat (rear-seat side)</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Sub Facing</span>
-            <select id="threeSubFacing">
-              <option value="rear" selected>Towards rear hatch</option>
-              <option value="front">Towards front seat</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Driver Layout</span>
-            <select id="threeDriverLayout">
-              <option value="auto" selected>Auto</option>
-              <option value="horizontal">Horizontal</option>
-              <option value="vertical">Vertical</option>
-            </select>
-          </label>
-          <label class="check-row" style="align-self:end;">
-            <input id="threeCutaway" type="checkbox" />
-            <span>Show Interior</span>
-          </label>
-          <label class="check-row" style="align-self:end;">
-            <input id="threeLockZoom" type="checkbox" />
-            <span>Lock 3D Zoom</span>
-          </label>
-          <label class="check-row" style="align-self:end;">
-            <input id="threeLockView" type="checkbox" />
-            <span>Lock 3D View</span>
-          </label>
-          <label class="check-row" style="align-self:end;">
-            <input id="threeEditMode" type="checkbox" />
-            <span>Enable 3D Editing</span>
-          </label>
-        </div>
-        <div class="preset-row" style="margin-top:0.6rem;">
-          <button type="button" class="preset-btn" data-three-view="hatch">Hatch View</button>
-          <button type="button" class="preset-btn" data-three-view="front">Front View</button>
-          <button type="button" class="preset-btn" data-three-view="top">Top View</button>
-          <button type="button" class="preset-btn" data-three-view="iso">Iso View</button>
-        </div>
-        <p class="section-hint" id="threeFitInfo" style="margin-top:0.6rem;">3D fit status: -</p>
-        <p class="section-hint" id="threeInteractionHint" style="margin-top:0.35rem;">3D interaction hint: -</p>
-        <p class="three-debug" id="threeDebug">3D debug: waiting for pointer input.</p>
-      </section>
-
-      <section class="card viz-card tab-panel" data-panel="design">
-        <h2>Designer Views</h2>
-        <p class="section-hint">Use these flat views for precise layout work. They stay synchronized with the live diagram and 3D preview, and folded slot channels are shown here as real internal runs.</p>
-        <div class="designer-grid">
-          <div class="designer-panel">
-            <h3>Front</h3>
-            <svg id="designerFrontView" viewBox="0 0 420 240" role="img" aria-label="Front orthographic designer view"></svg>
-          </div>
-          <div class="designer-panel">
-            <h3>Side</h3>
-            <svg id="designerSideView" viewBox="0 0 420 240" role="img" aria-label="Side orthographic designer view"></svg>
-          </div>
-          <div class="designer-panel">
-            <h3>Top</h3>
-            <svg id="designerTopView" viewBox="0 0 420 240" role="img" aria-label="Top orthographic designer view"></svg>
-          </div>
-        </div>
-      </section>
-
-      
-
-      <section class="card outputs sticky-results tab-panel" data-panel="design">
-        <h2>Calculated Output</h2>
-        <div class="output-grid">
-          <div class="metric">
-            <span class="label">Internal Dimensions</span>
-            <span class="value" id="internalDimensions">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">External Dimensions</span>
-            <span class="value" id="externalDimensions">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">Gross Volume</span>
-            <span class="value" id="grossVolume">-</span>
-          </div>
-          <div class="metric">
-            <span class="label">Net Before Driver</span>
-            <span class="value" id="netBefore">-</span>
-          </div>
-          <div class="metric highlight">
-            <span class="label">Net After Driver</span>
-            <span class="value" id="netAfter">-</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="card warnings-card tab-panel" data-panel="design">
-        <h2>Status</h2>
-        <ul id="warnings" class="warnings" aria-live="polite"></ul>
-      </section>
-
-      <section class="card tab-panel" data-panel="design">
+      <section class="card tab-panel manual-step" data-panel="design">
         <h2>Manual Box Calculator</h2>
         <p class="section-hint">Manually enter dimensions to calculate volume, or use the Target Volume Helper above to get suggestions.</p>
         <div class="field-grid dimension-grid">
@@ -625,10 +567,10 @@
         </div>
       </section>
 
-      <section class="card tab-panel" data-panel="design">
+      <section class="card tab-panel target-step" data-panel="design">
         <h2>Quick Volume Sizing</h2>
         <p class="section-hint">Get suggested box dimensions for a target volume.</p>
-        <div class="field-grid" style="margin-top:0.4rem;">
+        <div class="field-grid top-gap-xs">
           <label class="field">
             <span>Suggestion Mode</span>
             <select id="quickSuggestionMode">
@@ -637,7 +579,7 @@
             </select>
           </label>
         </div>
-        <div class="field-grid" style="margin-top:0.6rem;">
+        <div class="field-grid top-gap-sm">
           <label class="field">
             <span>Auto Dimension Priority 1</span>
             <select id="quickAutoPriority1">
@@ -663,7 +605,7 @@
             </select>
           </label>
         </div>
-        <div class="field-grid" style="margin-top:0.6rem;">
+        <div class="field-grid top-gap-sm">
           <label class="field">
             <span>Width Weight (%)</span>
             <input id="quickAutoWeightWidth" type="number" min="0" max="100" step="1" value="33" />
@@ -701,6 +643,102 @@
         </div>
       </section>
 
+      <section class="card viz-card tab-panel preview3d-step" data-panel="design">
+        <h2>3D Preview</h2>
+        <p class="section-hint">Use 3D to check fit, orientation, and port routing after your main sizing is close. The primary workflow is still the sizing cards and 2D views.</p>
+        <p class="section-hint mobile-only">On phones, use 3D mainly as a viewer. The most reliable editing tools are still the main 2D designer surfaces.</p>
+        <div id="threePreview" class="three-preview-shell"></div>
+        <details class="advanced-panel top-gap-sm mobile-advanced-panel" id="threeControlsPanel" open>
+          <summary>
+            <span>3D Review Controls</span>
+            <span class="summary-chip" id="threeControlsSummary">Viewer mode</span>
+          </summary>
+        <p class="section-hint top-gap-sm">Most users only need view presets, fit status, and interior on/off. Lock view and zoom only if you want to edit directly in 3D.</p>
+        <div class="field-grid top-gap-sm">
+          <label class="field">
+            <span>Depth Direction</span>
+            <select id="threeDepthDirection">
+              <option value="front_to_back" selected>Front seat → Rear hatch</option>
+              <option value="back_to_front">Rear hatch → Front seat</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Box Position (Depth)</span>
+            <select id="threeBoxAnchor">
+              <option value="rear">Near rear hatch</option>
+              <option value="center">Centered</option>
+              <option value="front" selected>Near front seat (rear-seat side)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Sub Facing</span>
+            <select id="threeSubFacing">
+              <option value="rear" selected>Towards rear hatch</option>
+              <option value="front">Towards front seat</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Driver Layout</span>
+            <select id="threeDriverLayout">
+              <option value="auto" selected>Auto</option>
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+            </select>
+          </label>
+          <label class="check-row align-end">
+            <input id="threeCutaway" type="checkbox" />
+            <span>Show Interior</span>
+          </label>
+          <label class="check-row align-end">
+            <input id="threeLockZoom" type="checkbox" />
+            <span>Lock 3D Zoom</span>
+          </label>
+          <label class="check-row align-end">
+            <input id="threeLockView" type="checkbox" />
+            <span>Lock 3D View</span>
+          </label>
+          <label class="check-row align-end">
+            <input id="threeEditMode" type="checkbox" />
+            <span>Allow 3D drag editing</span>
+          </label>
+        </div>
+        <div class="preset-row top-gap-sm">
+          <button type="button" class="preset-btn" data-three-view="hatch">Hatch View</button>
+          <button type="button" class="preset-btn" data-three-view="front">Front View</button>
+          <button type="button" class="preset-btn" data-three-view="top">Top View</button>
+          <button type="button" class="preset-btn" data-three-view="iso">Iso View</button>
+        </div>
+        <p class="section-hint top-gap-sm" id="threeFitInfo">3D fit status: -</p>
+        <p class="section-hint top-gap-xs" id="threeInteractionHint">3D interaction hint: -</p>
+        <p class="three-debug" id="threeDebug">3D debug: waiting for pointer input.</p>
+        </details>
+      </section>
+
+      <section class="card viz-card tab-panel designer-step" data-panel="design">
+        <h2>2D Layout Views</h2>
+        <details class="advanced-panel mobile-advanced-panel" id="designerViewsPanel" open>
+          <summary>
+            <span>Precise Layout Tools</span>
+            <span class="summary-chip">Front • Side • Top</span>
+          </summary>
+        <p class="section-hint top-gap-sm">Use these flat views when you need accurate placement and folded-slot review. They stay synchronized with the live diagram and 3D preview.</p>
+        <div class="designer-grid">
+          <div class="designer-panel">
+            <h3>Front</h3>
+            <svg id="designerFrontView" viewBox="0 0 420 240" role="img" aria-label="Front orthographic designer view"></svg>
+          </div>
+          <div class="designer-panel">
+            <h3>Side</h3>
+            <svg id="designerSideView" viewBox="0 0 420 240" role="img" aria-label="Side orthographic designer view"></svg>
+          </div>
+          <div class="designer-panel">
+            <h3>Top</h3>
+            <svg id="designerTopView" viewBox="0 0 420 240" role="img" aria-label="Top orthographic designer view"></svg>
+          </div>
+        </div>
+        </details>
+      </section>
+
       <section class="card tab-panel" data-panel="build">
         <h2>Cut Sheet</h2>
         <p class="build-note">Build view keeps construction details separate from sizing workflow.</p>
@@ -708,6 +746,13 @@
       </section>
     </main>
 
-    <script src="app.js?v=2026-06-17-01"></script>
+    <script src="src/js/boxMath.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxUI.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxValidation.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxRender2d.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxRender3d.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxInteraction.js?v=2026-06-20-01"></script>
+    <script src="src/js/boxController.js?v=2026-06-20-01"></script>
+    <script src="app.js?v=2026-06-20-01"></script>
   </body>
 </html>

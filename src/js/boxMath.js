@@ -62,9 +62,153 @@ function getNetVolume(grossFt3, displacementFt3) {
   return grossFt3 - displacementFt3;
 }
 
+function getPortQuantity(currentState) {
+  return currentState.portType === 'round'
+    ? Math.max(1, Math.round(safeNumber(currentState.roundPortQuantity)))
+    : Math.max(1, Math.round(safeNumber(currentState.slotPortCount)));
+}
+
+function getPortAreaPerInstanceSqIn(currentState) {
+  if (currentState.portType === 'round') {
+    const diameter = Math.max(0.01, safeNumber(currentState.roundPortDiameter));
+    return Math.PI * (diameter / 2) * (diameter / 2);
+  }
+  return Math.max(0.01, safeNumber(currentState.slotPortWidth)) * Math.max(0.01, safeNumber(currentState.slotPortHeight));
+}
+
+function getPortLengthDistribution(currentState, totalLength) {
+  const safeLength = Math.max(0.01, safeNumber(totalLength));
+  const mode = ['internal', 'external', 'split'].includes(currentState.portExtensionMode)
+    ? currentState.portExtensionMode
+    : 'internal';
+  if (mode === 'external') {
+    return { mode, internalLength: 0, externalLength: safeLength };
+  }
+  if (mode === 'split') {
+    return { mode, internalLength: safeLength * 0.5, externalLength: safeLength * 0.5 };
+  }
+  return { mode, internalLength: safeLength, externalLength: 0 };
+}
+
+function getPortDisplacementFt3(currentState) {
+  if (currentState.enclosureType !== 'ported') return 0;
+  const totalLength = currentState.portType === 'round'
+    ? safeNumber(currentState.roundPortLength)
+    : safeNumber(currentState.slotPortLength);
+  const internalLength = getPortLengthDistribution(currentState, totalLength).internalLength;
+  if (currentState.portType === 'round') {
+    const radius = safeNumber(currentState.roundPortDiameter) / 2;
+    const quantity = getPortQuantity(currentState);
+    return ((Math.PI * radius * radius * internalLength) * quantity) / 1728;
+  }
+  const width = safeNumber(currentState.slotPortWidth);
+  const height = safeNumber(currentState.slotPortHeight);
+  const quantity = getPortQuantity(currentState);
+  return (width * height * internalLength * quantity) / 1728;
+}
+
+function getTotalDisplacementFt3(currentState) {
+  const driver = safeNumber(currentState.driverDisplacement) * Math.max(1, Math.round(safeNumber(currentState.driverCount) || 1));
+  const bracing = Math.max(0, safeNumber(currentState.bracingDisplacement));
+  const port = getPortDisplacementFt3(currentState);
+  return driver + bracing + port;
+}
+
+function buildSlotRunLengths(totalRunLength, channelCount, minRunLength, leadOffset) {
+  const runs = new Array(channelCount).fill(Math.max(minRunLength, totalRunLength / Math.max(1, channelCount)));
+  if (channelCount <= 1) {
+    runs[0] = Math.max(minRunLength, totalRunLength);
+    return runs;
+  }
+  const safeTotal = Math.max(minRunLength * channelCount, totalRunLength);
+  const baseRun = safeTotal / channelCount;
+  const maxLead = safeTotal - (minRunLength * (channelCount - 1));
+  const firstRun = Math.max(minRunLength, Math.min(maxLead, baseRun + leadOffset));
+  const remainingTotal = safeTotal - firstRun;
+  const otherRun = Math.max(minRunLength, remainingTotal / (channelCount - 1));
+  runs[0] = firstRun;
+  for (let i = 1; i < channelCount; i += 1) runs[i] = otherRun;
+  const sum = runs.reduce((acc, value) => acc + value, 0);
+  const correction = safeTotal - sum;
+  runs[runs.length - 1] += correction;
+  return runs;
+}
+
+function normalizeSlotRunProfile(profile, channelCount, totalRunLength, minRunLength, leadOffset) {
+  const desired = Array.isArray(profile) ? profile.slice(0, channelCount) : [];
+  while (desired.length < channelCount) desired.push(minRunLength);
+  const base = desired.some((value) => Number.isFinite(value) && value > 0)
+    ? desired.map((value) => Math.max(minRunLength, safeNumber(value)))
+    : buildSlotRunLengths(totalRunLength, channelCount, minRunLength, leadOffset);
+  let runs = base.slice();
+  let sum = runs.reduce((acc, value) => acc + value, 0);
+  if (sum < totalRunLength) {
+    const add = (totalRunLength - sum) / Math.max(1, runs.length);
+    runs = runs.map((value) => value + add);
+    sum = totalRunLength;
+  }
+  let overflow = sum - totalRunLength;
+  while (overflow > 0.0001) {
+    const adjustable = runs.map((value) => Math.max(0, value - minRunLength));
+    const adjustableTotal = adjustable.reduce((acc, value) => acc + value, 0);
+    if (adjustableTotal <= 0.0001) break;
+    runs = runs.map((value, index) => value - ((adjustable[index] / adjustableTotal) * overflow));
+    runs = runs.map((value) => Math.max(minRunLength, value));
+    sum = runs.reduce((acc, value) => acc + value, 0);
+    overflow = sum - totalRunLength;
+  }
+  const correction = totalRunLength - runs.reduce((acc, value) => acc + value, 0);
+  runs[runs.length - 1] = Math.max(minRunLength, runs[runs.length - 1] + correction);
+  return runs;
+}
+
+function getFoldedSlotOverflow(currentState, instance, enclosureHalf) {
+  const requestedChannels = Math.max(1, Math.round(safeNumber(currentState.slotPortChannelCount)));
+  const gap = Math.max(0, safeNumber(currentState.slotPortChannelGap));
+  const foldAxis = instance.foldAxis || instance.tangentA;
+  const foldThickness = foldAxis === instance.tangentA ? instance.openingA : instance.openingB;
+  const step = foldThickness + gap;
+  const minRunLength = Math.max(0.01, safeNumber(currentState.designerSnapIncrement) || 0.25);
+  let effectiveChannels = requestedChannels;
+  while (
+    effectiveChannels > 1 &&
+    (instance.internalLength - ((effectiveChannels - 1) * step)) < (effectiveChannels * minRunLength)
+  ) {
+    effectiveChannels -= 1;
+  }
+  const half = enclosureHalf[foldAxis];
+  const laneLimit = half - (foldThickness * 0.5);
+  const totalRunLength = Math.max(0.01, instance.internalLength - ((effectiveChannels - 1) * step));
+  const runLengths = normalizeSlotRunProfile(
+    currentState.slotPortRunProfile,
+    effectiveChannels,
+    totalRunLength,
+    minRunLength,
+    safeNumber(currentState.slotPortLeadRunOffset)
+  );
+  const overflows = [];
+  for (let channelIndex = 0; channelIndex < effectiveChannels; channelIndex += 1) {
+    const laneOffset = channelIndex * step * (instance.directionSign || 1);
+    const laneCenter = safeNumber(instance.center && instance.center[foldAxis]) + laneOffset;
+    if (Math.abs(laneCenter) > laneLimit + 0.001) {
+      overflows.push({
+        channelIndex,
+        axis: foldAxis,
+        laneCenter,
+        laneLimit
+      });
+    }
+  }
+  return {
+    effectiveChannels,
+    runLengths,
+    overflows
+  };
+}
+
 function getSuggestedInternalDimensions(currentState, internalDimensions) {
   const currentGross = getVolume(internalDimensions).ft3;
-  const targetGross = currentState.targetNetVolume + currentState.driverDisplacement;
+  const targetGross = currentState.targetNetVolume + getTotalDisplacementFt3(currentState);
 
   if (
     currentGross <= 0 ||
@@ -125,7 +269,7 @@ function getConstraintData(currentState, externalDimensions) {
     enabled: true,
     fitsCurrent,
     maxInternal,
-    maxNet: maxGross - currentState.driverDisplacement,
+    maxNet: maxGross - getTotalDisplacementFt3(currentState),
     overBy
   };
 }
@@ -164,7 +308,7 @@ function applyConstraintToSuggested(currentState, suggestedInternal, constraintD
 
   // If we're constrained, prefer keeping the limiting dimension at its max and
   // scaling the other two to hit the target gross volume while preserving their ratio.
-  const targetGross = currentState.targetNetVolume + currentState.driverDisplacement;
+  const targetGross = currentState.targetNetVolume + getTotalDisplacementFt3(currentState);
   if (!(targetGross > 0)) {
     return { internal: null, constrained: true, reachable: false };
   }
@@ -229,7 +373,7 @@ function getMaximizeSuggestion(currentState, constraintData) {
     depth: Math.max(minDim, rawMaxInternal.depth || 0)
   };
 
-  const targetGross = currentState.targetNetVolume + currentState.driverDisplacement;
+  const targetGross = currentState.targetNetVolume + getTotalDisplacementFt3(currentState);
   if (!(targetGross > 0)) {
     return { internal: null, maxed: { width: false, height: false, depth: false } };
   }
@@ -344,7 +488,7 @@ function getAutoWeights(currentState) {
 function getTargetPrioritySuggestion(currentState, constraintData) {
   const minDim = 0.01;
   const minDepth = Math.max(minDim, safeNumber(currentState.mountingDepth) || 0);
-  const targetGross = currentState.targetNetVolume + currentState.driverDisplacement;
+  const targetGross = currentState.targetNetVolume + getTotalDisplacementFt3(currentState);
   if (!(targetGross > 0)) return { internal: null, maxed: { width: false, height: false, depth: false } };
 
   const maxInternal = constraintData && constraintData.enabled && constraintData.maxInternal
@@ -388,6 +532,14 @@ const api = {
   getExternalDimensions,
   getVolume,
   getNetVolume,
+  getPortQuantity,
+  getPortAreaPerInstanceSqIn,
+  getPortLengthDistribution,
+  getPortDisplacementFt3,
+  getTotalDisplacementFt3,
+  buildSlotRunLengths,
+  normalizeSlotRunProfile,
+  getFoldedSlotOverflow,
   getSuggestedInternalDimensions,
   getConstraintData,
   applyConstraintToSuggested,
