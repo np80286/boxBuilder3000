@@ -1,4 +1,9 @@
-const BUILD_ID = 'v1.0.0-2026-06-20-01';
+if (window.__BOX_BUILDER_APP_BOOTED__) {
+  console.warn('boxBuilder3000 app.js attempted to boot more than once; duplicate boot ignored.');
+} else {
+  window.__BOX_BUILDER_APP_BOOTED__ = true;
+
+const BUILD_ID = 'v1.0.0-2026-06-20-02';
 const STORAGE_KEY = 'boxBuilderState.v2';
 const PARTS_SPEC_STORAGE_KEY = 'boxBuilderPartsSpec.v1';
 const PARSED_STORAGE_KEY = 'boxBuilderParsedPreview.v1';
@@ -2258,3 +2263,4 @@ if (savedPreview) {
 }
 
 renderUI();
+}
