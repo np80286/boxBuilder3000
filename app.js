@@ -1,4 +1,4 @@
-const BUILD_ID = 'dev-2026-06-20-01';
+const BUILD_ID = 'v1.0.0-2026-06-20-01';
 const STORAGE_KEY = 'boxBuilderState.v2';
 const PARTS_SPEC_STORAGE_KEY = 'boxBuilderPartsSpec.v1';
 const PARSED_STORAGE_KEY = 'boxBuilderParsedPreview.v1';
@@ -2243,17 +2243,6 @@ window.addEventListener('resize', () => {
   applyResponsivePanelDefaults();
   updateAdvancedSummaryChips();
 });
-
-if (typeof window !== 'undefined') {
-  window.updateAdvancedSummaryChips = updateAdvancedSummaryChips;
-  window.updateSpaceInfo = updateSpaceInfo;
-  window.renderUI = renderUI;
-  window.BoxApp = Object.assign(window.BoxApp || {}, {
-    updateAdvancedSummaryChips,
-    updateSpaceInfo,
-    renderUI
-  });
-}
 
 // Seed/persist Parts Express paste + preview defaults so Apply Preview works without re-pasting.
 if (inputs.partsSpecPaste) {
