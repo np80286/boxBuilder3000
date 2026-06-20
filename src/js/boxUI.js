@@ -85,14 +85,24 @@ function updateSpaceInfo(currentState) {
   const spaceInfoEl = document.getElementById('spaceInfo');
   if (!spaceInfoEl) return;
 
-  if (!currentState.useMaxConstraints) {
-    spaceInfoEl.textContent = 'Constraints disabled';
-    return;
+  let spaceText = 'Calculating available space...';
+  if (!currentState || typeof currentState !== 'object') {
+    spaceText = 'Unable to read space constraints';
+  } else if (!currentState.useMaxConstraints) {
+    spaceText = 'Constraints disabled';
+  } else {
+    const width = Number(currentState.maxBoxWidth);
+    const height = Number(currentState.maxBoxHeight);
+    const depth = Number(currentState.maxBoxDepth);
+    if (!Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(depth) || width <= 0 || height <= 0 || depth <= 0) {
+      spaceText = 'Invalid max dimensions';
+    } else {
+      const maxFt3 = (width * height * depth) / 1728;
+      spaceText = `Available trunk space: ${maxFt3.toFixed(2)} ft³`;
+    }
   }
 
-  const maxIn3 = currentState.maxBoxWidth * currentState.maxBoxHeight * currentState.maxBoxDepth;
-  const maxFt3 = maxIn3 / 1728;
-  spaceInfoEl.textContent = `Available trunk space: ${maxFt3.toFixed(2)} ft³`;
+  spaceInfoEl.textContent = spaceText;
 }
 
 function syncCabinetStyleUI(currentState, inputs, safeNumber) {
