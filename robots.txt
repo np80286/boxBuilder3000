@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /ChatBridge.md
+Disallow: /upgrades.md
+Disallow: /smoke.js
+Disallow: /test.js
+Disallow: /package.json
+Disallow: /docs/
