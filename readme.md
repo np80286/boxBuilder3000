@@ -213,7 +213,7 @@ Use this as a starting point only. Real-world building may require adjustments f
 - Port calculations are a planning aid and should be checked before building.
 - 3D editing is still experimental.
 - The app stores settings in browser local storage.
-- If the app acts strange after an update, reload with the current version query string or clear local storage.
+- If the app acts strange after an update, hard-refresh the page or clear local storage.
 
 ## Project Files
 

@@ -8,11 +8,10 @@
 
 ## Summary
 
-This release finalizes the latest `upgrades` work into `main` and ships a stable update to the Box Builder UI and workflow.
+This release ships a stable Box Builder UI and workflow update from `main`.
 
 Key improvements:
 
-- Merged `upgrades` into `main` with a completed release checklist.
 - Stabilized the box builder UX and modularized core app logic.
 - Enabled and improved 2D/3D editing workflows.
 - Added better target volume suggestion behavior with manual override support.
@@ -23,9 +22,9 @@ Key improvements:
 
 ## Deployment notes
 
-- Local branch `upgrades` has been merged and is ready for cleanup.
 - `main` has been verified clean and current with `origin/main`.
 - A GitHub release has been created for this tag.
+- The public app now keeps a clean canonical page URL and uses versioned asset URLs for cache busting.
 
 ## Verification checklist
 

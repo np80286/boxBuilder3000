@@ -1,8 +1,8 @@
 # Box Builder Release Checklist
 
-## Before Merge To `main`
+## Before Release
 
-1. Confirm the working tree is clean on `upgrades`.
+1. Confirm the working tree is clean on `main`.
 2. Run:
    - `node test.js`
    - `node smoke.js`
@@ -27,22 +27,20 @@
    - info notes are visually distinct
    - confidence chip matches the current state
 
-## Merge
+## Publish
 
 1. Update local `main`.
-2. Merge `upgrades` into `main`.
-3. Re-run:
+2. Re-run:
    - `node test.js`
    - `node smoke.js`
-4. Push `main`.
+3. Push `main`.
 
 ## After Merge
 
-1. Verify the deployed GitHub Pages build has the latest asset version.
+1. Verify the deployed GitHub Pages build loads from the clean canonical URL.
 2. Hard-refresh once and confirm the `Build:` label matches the expected release build id.
 3. Re-test one ported slot workflow and one wedge workflow on the live site.
 
 ## Optional Cleanup
 
-1. Delete the old `aui` branch once everyone is sure it is no longer needed.
-2. Delete `upgrades` after the merge if you want to keep the branch list tight.
+1. Confirm no stale release branches were recreated remotely.
