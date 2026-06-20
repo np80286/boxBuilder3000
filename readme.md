@@ -57,6 +57,12 @@ You can also open the file directly:
 file:///path/to/boxBuilder/index.html
 ```
 
+Run the repository tests with:
+
+```bash
+npm test
+```
+
 Using a local server is recommended for the experimental 3D preview.
 
 ### 2. Set Your Maximum Space

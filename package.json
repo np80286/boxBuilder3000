@@ -1,0 +1,11 @@
+{
+  "name": "box-builder",
+  "version": "1.0.0",
+  "description": "Browser-based speaker enclosure design helper with box volume and fit calculations.",
+  "main": "app.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "author": "",
+  "license": "MIT"
+}
