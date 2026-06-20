@@ -1976,11 +1976,6 @@ function renderPresetState() {
   });
 }
 
-function updateSpaceInfo() {
-  if (!state || typeof state !== 'object') return;
-  updateSpaceInfoUI(state);
-}
-
 function syncCabinetStyleUI() {
   syncCabinetStyleUIHelper(state, inputs, safeNumber);
 }
